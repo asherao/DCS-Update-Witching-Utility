@@ -65,7 +65,7 @@ namespace DCS_Update_Witching_Utility
             isOptionsLuaSelected = false;
             loadSaveFile();
 
-            textBlock_time.Text = "Last Checked:" + "\r\n" + DateTime.Now.ToString();
+            textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
 
 
             dispatcherTimer.Tick += dispatcherTimer_Tick;
@@ -120,17 +120,12 @@ namespace DCS_Update_Witching_Utility
         string htmlCode;
         private void getInitialVersionNumbers()
         {
-
-
             downloadHtmlFile();
-
-
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-a-text-file-one-line-at-a-time
             //int counter = 0;
 
             // Read the file and display it line by line.  
             StringReader reader = new StringReader(htmlCode);
-
             while ((htmlCode = reader.ReadLine()) != null)
             {
                 //System.Console.WriteLine(line);
@@ -173,14 +168,16 @@ namespace DCS_Update_Witching_Utility
             {
                 // Or you can get the file content without saving it
                 //htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
-                htmlCode = File.ReadAllText(@"E:\Downloads\[TEMP]\DCS World Updates2.html");//TODO: Remove this after testing is finished
+                //htmlCode = File.ReadAllText(@"E:\Downloads\[TEMP]\DCS World Updates2.html");//TODO: Remove this after testing is finished
+                
+                htmlCode = File.ReadAllText(@"D:\Downloads\DCS World Updates.html");//TODO: Remove this after testing is finished
             }
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             // code goes here
-            textBlock_time.Text = "Last Checked:" + "\r\n" + DateTime.Now.ToString();
+            textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
             getVersionNumbers();
             
         }
@@ -188,8 +185,6 @@ namespace DCS_Update_Witching_Utility
         private void getVersionNumbers()
         {
             downloadHtmlFile();
-
-
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-a-text-file-one-line-at-a-time
             //int counter = 0;
 
@@ -214,19 +209,21 @@ namespace DCS_Update_Witching_Utility
                     }
                     else
                     { //the numbers were likely different
+                        //this goes here so that it can be updated regardless if it was the one being monitored
+                        textBlock_stableVersionNumber.Text = ("Latest stable version is: " + stableVersionNumberNew);
+                        textBlock_stableVersionNumber.Background = new SolidColorBrush(Colors.LightGreen);
                         if (isStableAutoUpdateOn == true)
                         {
                             //MessageBox.Show(textBlock_stableVersionNumber.Text + "\r\n" +
                             //    stableVersionNumberNew);
-                            textBlock_stableVersionNumber.Text = ("Latest stable version is: " + stableVersionNumberNew);
+                            
                             button_autoUpdateDcsViaStable.IsEnabled = false;
                             button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
                             mediaPlayer.Play();
                             dispatcherTimer.Stop();
-                            textBlock_time.Text = "Last Updated:" + "\r\n" + DateTime.Now.ToString();
+                            textBlock_time.Text = "Updated: " + DateTime.Now.ToString();
+                            textBlock_time.Background = new SolidColorBrush(Colors.LightGreen);
                             actions_UpdateDcsViaStableButton();//it presses the button to update stable branch
-                           
-
                         }
                     }
 
@@ -247,16 +244,21 @@ namespace DCS_Update_Witching_Utility
                     }
                     else
                     { //the numbers were likely different
+                        //this goes here so that it can be updated regardless if it was the one being monitored
+                        textBlock_openBetaVersionNumber.Text = ("Current openbeta is: " + openBetaVersionNumberNew);
+                        textBlock_openBetaVersionNumber.Background = new SolidColorBrush(Colors.LightGreen);
                         if (isOpenbetaAutoUpdateOn == true)
                         {
+                            
                             //MessageBox.Show(textBlock_stableVersionNumber.Text + "\r\n" +
                             //    openBetaVersionNumberNew);
-                            textBlock_openBetaVersionNumber.Text = ("Current openbeta is: " + openBetaVersionNumberNew);
+                            
                             button_autoUpdateDcsViaStable.IsEnabled = false;
                             button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
                             mediaPlayer.Play();
                             dispatcherTimer.Stop();
-                            textBlock_time.Text = "Last Updated:" + "\r\n" + DateTime.Now.ToString();
+                            textBlock_time.Text = "Updated: " +  DateTime.Now.ToString();
+                            textBlock_time.Background = new SolidColorBrush(Colors.LightGreen);
                             actions_UpdateDcsViaOpenbetaButton();//it presses the button to update stable branch
                             
                         }
@@ -377,7 +379,6 @@ namespace DCS_Update_Witching_Utility
         }
 
 
-        string terrainShaders_path;
         string terrainMetacacheLocation_Caucasus;
         string terrainMetacacheLocation_PersianGulf;
         string terrainMetacacheLocation_Syria;
@@ -408,6 +409,7 @@ namespace DCS_Update_Witching_Utility
             terrainMetacacheLocation_Caucasus = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Caucasus\misc\metacache\dcs");
             terrainMetacacheLocation_PersianGulf = Path.Combine(dcsInstallDirectory, @"Mods\terrains\PersianGulf\misc\metacache\dcs");
             terrainMetacacheLocation_Syria = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Syria\misc\metacache\dcs");
+            terrainMetacacheLocation_Nevada = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Nevada\misc\metacache\dcs");
 
             //MessageBox.Show(terrainMetacacheLocation_Caucasus + "\r\n"
             //    + terrainMetacacheLocation_PersianGulf + "\r\n"
@@ -782,7 +784,7 @@ namespace DCS_Update_Witching_Utility
             if (isGoodToProcess == true)
             {
                 //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
-                string sMessageBoxText = "You are about to perform all 6 actions at once." + "\r\n" +
+                string sMessageBoxText = "You are about to perform all 6 backup and clearing actions at once." + "\r\n" +
                     "There is no 'undo'. " + "\r\n" +
                     "Do you want to continue?";
                 string sCaption = "READ THIS CAREFULLY";
@@ -802,7 +804,7 @@ namespace DCS_Update_Witching_Utility
                         actions_clearmetashaders2FolderButton();
                         actions_clearTerrainShadersButton();
                         actions_DcsTempFolderButton();
-                        actions_updateButton();
+                        //actions_updateButton(); TODO:Remove This
                         break;
 
                     case MessageBoxResult.No:
