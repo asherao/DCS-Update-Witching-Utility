@@ -1,0 +1,112 @@
+﻿<Window x:Class="DCS_Update_Witching_Utility.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DCS_Update_Witching_Utility"
+        mc:Ignorable="d"
+        Title="DCS-Update Witching Utility (DCS-UwU) v1" Height="400" Width="450">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!--Margin-->
+            <ColumnDefinition Width="5" />
+            <!--Margin-->
+
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*"/>
+
+            <!--Margin-->
+            <ColumnDefinition Width="5" />
+            <!--Margin-->
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <!--Margin-->
+            <RowDefinition Height="5"/>
+            <!--Margin-->
+
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+
+            <!--Margin-->
+            <RowDefinition Height="5"/>
+            <!--Margin-->
+        </Grid.RowDefinitions>
+
+        <Button x:Name="button_selectDcsExe" Content="Select DCS Updater.exe" Click="button_selectDcsExe_Click" 
+                Grid.Column="1" Grid.Row="1" Margin="5" MouseRightButtonUp="button_selectDcsExe_rightUp"/>
+        <TextBox x:Name="textBlock_selectDcsExe" Width="AUTO"
+                   Grid.Column="2" Grid.Row="1" Margin="5" Text="DCS_Updater.exe Path" IsEnabled="False" MouseRightButtonUp="textBlock_selectDcsExe_rightUp" VerticalAlignment="Center"/>
+
+        <Button x:Name="button_selectOptionsLua" Content="Select Options.lua" Click="button_selectOptionsLua_Click" 
+                Grid.Column="1" Grid.Row="2" Margin="5" MouseRightButtonUp="button_selectOptionsLua_rightUp"/>
+        <TextBox x:Name="textBlock_selectOptionsLua" Width="AUTO"
+                   Grid.Column="2" Grid.Row="2" Margin="5" IsEnabled="False" Text="Options.lua Path" MouseRightButtonUp="textBlock_selectOptionsLua_rightUp" VerticalAlignment="Center"/>
+
+        <!--<Button x:Name="button_checkForDcsUpdate" Content="Check for DCS Update" Click="button_checkForDcsUpdate_Click"
+                Grid.Column="1" Grid.Row="3" Margin="5"/>-->
+
+        <Button x:Name="button_UpdateDcsViaStable" Content="Update DCS via Stable" Click="button_UpdateDcsViaStable_Click"
+                Grid.Column="1" Grid.Row="6" Margin="5"/>
+
+        <Button x:Name="button_UpdateDcsViaOpenbeta" Content="Update DCS via Openbeta" Click="button_UpdateDcsViaOpenbeta_Click"
+                Grid.Column="2" Grid.Row="6" Margin="5"/>
+
+        <Button x:Name="button_autoUpdateDcsViaStable" Content="Auto Update DCS Stable" Click="button_autoUpdateDcsViaStable_Click"
+                Grid.Column="1" Grid.Row="7" Margin="5"/>
+
+        <Button x:Name="button_autoUpdateDcsViaOpenbeta" Content="Auto Update DCS Openbeta" Click="button_autoUpdateDcsViaOpenbeta_Click"
+                Grid.Column="2" Grid.Row="7" Margin="5"/>
+
+        <Button x:Name="button_backupInputFolder" Content="Backup Input Folder" Click="button_backupInputFolder_Click"
+                Grid.Column="1" Grid.Row="3" Margin="5"/>
+
+        <Button x:Name="button_backupConfigFolder" Content="Backup Config Folder" Click="button_backupConfigFolder_Click"
+                Grid.Column="2" Grid.Row="3" Margin="5"/>
+
+        <Button x:Name="button_clearFxoFolder" Content="Clear FXO Folder" Click="button_clearFxoFolder_Click"
+                Grid.Column="2" Grid.Row="4" Margin="5"/>
+
+        <Button x:Name="button_clearMetashaders2Folder" Content="Clear Metashaders2 Folder" Click="button_clearmetashaders2Folder_Click"
+                Grid.Column="1" Grid.Row="4" Margin="5"/>
+
+        <Button x:Name="button_clearTerrainShaders" Content="Clear Terrain Metacashe" Click="button_clearTerrainShaders_Click"
+                Grid.Column="2" Grid.Row="5" Margin="5"/>
+
+        <Button x:Name="button_DcsTempFolder" Content="Clear DCS Temp Folder" Click="button_DcsTempFolder_Click"
+                Grid.Column="1" Grid.Row="5" Margin="5"/>
+
+        <TextBlock x:Name="textBlock_stableVersionNumber" Width="AUTO"
+                   Grid.Column="1" Grid.Row="9" Margin="5" Text="Stable Version Number" IsEnabled="False" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock x:Name="textBlock_openBetaVersionNumber" Width="AUTO"
+                   Grid.Column="2" Grid.Row="9" Margin="5" Text="OpenBeta Version Number" IsEnabled="False" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+
+        <TextBlock x:Name="textBlock_time" Width="AUTO"
+                   Grid.Column="1" Grid.Row="10" Margin="5" Text="Last check for update:" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+        <Button x:Name="button_WitchEverything" Content="Witch Everything!!!" Click="button_WitchEverything_Click"
+                Grid.Column="2" Grid.Row="10" Grid.RowSpan="1" Margin="5"/>
+
+        <Button x:Name="button_pickAutoUpdateSound" Content="Pick Auto Update Sound" Click="button_pickAutoUpdateSound_Click"
+                Grid.Column="1" Grid.Row="8" Grid.RowSpan="1" Margin="5"/>
+
+        <Button x:Name="button_stopSound" Content="Stop Sound" Click="button_stopSound_Click"
+                Grid.Column="2" Grid.Row="8" Grid.RowSpan="1" Margin="5"/>
+
+        <Border Name="border1" Grid.Column="1" Grid.Row="3" Margin="1" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="2" BorderBrush="#FF153BE4" />
+
+        <Border Name="border2" Grid.Column="1" Grid.Row="4" Margin="1" Grid.ColumnSpan="2" Grid.RowSpan="2" BorderThickness="2" BorderBrush="#FF27C73D" />
+
+        <Border Name="border3" Grid.Column="1" Grid.Row="6" Margin="1" Grid.ColumnSpan="2" Grid.RowSpan="3" BorderThickness="2" BorderBrush="#FFBC34DA" />
+
+
+    </Grid>
+</Window>
