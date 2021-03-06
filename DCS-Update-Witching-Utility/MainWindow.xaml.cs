@@ -11,7 +11,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-//using System.Windows.Shapes;
 using System.Diagnostics;
 using System.ComponentModel;
 using Microsoft.Win32;
@@ -174,7 +173,7 @@ namespace DCS_Update_Witching_Utility
             {
                 // Or you can get the file content without saving it
                 //htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
-                htmlCode = File.ReadAllText(@"E:\Downloads\[TEMP]\DCS World Updates2.html");//TODO: Remove this
+                htmlCode = File.ReadAllText(@"E:\Downloads\[TEMP]\DCS World Updates2.html");//TODO: Remove this after testing is finished
             }
         }
 
@@ -383,6 +382,10 @@ namespace DCS_Update_Witching_Utility
         string terrainMetacacheLocation_PersianGulf;
         string terrainMetacacheLocation_Syria;
         string terrainMetacacheLocation_TheChannel;
+        string terrainMetacacheLocation_Normandy;
+        string terrainMetacacheLocation_Nevada;
+        string terrainMetacacheLocation_Falklands;
+        string terrainMetacacheLocation_Mariana;
         string dcsInstallDirectory;
 
         private void generatePathsFromDcsExePath()
@@ -392,26 +395,29 @@ namespace DCS_Update_Witching_Utility
             //\DCS World OpenBeta\Mods\terrains\Caucasus\misc\metacache\dcs
             //\DCS World OpenBeta\Mods\terrains\PersianGulf\misc\metacache\dcs
             //\DCS World OpenBeta\Mods\terrains\Syria\misc\metacache\dcs
+            //\DCS World OpenBeta\Mods\terrains\Nevada\misc\metacache\dcs
+            //\DCS World OpenBeta\Mods\terrains\TheChannel\misc\metacache\dcs
+            //\DCS World OpenBeta\Mods\terrains\Normandy\misc\metacache\dcs
 
-            //\DCS World OpenBeta\Mods\terrains\TheChannel\misc\metacache\dcs TODO:Check to make sure this is correct
-            //\DCS World OpenBeta\Mods\terrains\Normandy\misc\metacache\dcs TODO:Check to make sure this is correct
-            //\DCS World OpenBeta\Mods\terrains\Guam\misc\metacache\dcs TODO:Check to make sure this is correct
-            //\DCS World OpenBeta\Mods\terrains\Falklands\misc\metacache\dcs TODO:Check to make sure this is correct
+            //\DCS World OpenBeta\Mods\terrains\Mariana\misc\metacache\dcs TODO:Check to make sure this will be correct
+            //\DCS World OpenBeta\Mods\terrains\Falklands\misc\metacache\dcs TODO:Check to make sure this will be correct
+
             dcsInstallDirectory = Path.GetFullPath(Path.Combine(selected_selectDcsExe_string, @"..\..\"));
             //MessageBox.Show(dcsInstallDirectory);//results in something like "C:/ProgramFiles/DCS"
 
             terrainMetacacheLocation_Caucasus = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Caucasus\misc\metacache\dcs");
             terrainMetacacheLocation_PersianGulf = Path.Combine(dcsInstallDirectory, @"Mods\terrains\PersianGulf\misc\metacache\dcs");
             terrainMetacacheLocation_Syria = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Syria\misc\metacache\dcs");
+
             //MessageBox.Show(terrainMetacacheLocation_Caucasus + "\r\n"
             //    + terrainMetacacheLocation_PersianGulf + "\r\n"
             //    + terrainMetacacheLocation_Syria + "\r\n");//results in something like "C:/ProgramFiles/DCS"
 
             //TODO: Check these
-            string terrainMetacacheLocation_TheChannel = Path.Combine(dcsInstallDirectory, @"Mods\terrains\TheChannel\misc\metacache\dcs");
-            //string terrainMetacacheLocation_Normandy = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Normandy\misc\metacache\dcs");
-            //string terrainMetacacheLocation_Guam = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Guam\misc\metacache\dcs");
-            //string terrainMetacacheLocation_Falklands = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Falklands\misc\metacache\dcs");
+            terrainMetacacheLocation_TheChannel = Path.Combine(dcsInstallDirectory, @"Mods\terrains\TheChannel\misc\metacache\dcs");
+            terrainMetacacheLocation_Normandy = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Normandy\misc\metacache\dcs");
+            terrainMetacacheLocation_Mariana = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Mariana\misc\metacache\dcs");
+            terrainMetacacheLocation_Falklands = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Falklands\misc\metacache\dcs");
         }
 
         string dcsSavedGamesDirectory;
@@ -448,7 +454,7 @@ namespace DCS_Update_Witching_Utility
             //MessageBox.Show(userDirectory);//this results in "C:/Users/XXX"
 
             //make the filepaths
-            //the final folder could be a few different names TODO:Check to see if this is the ok way of doing this.
+            //the final folder could be a few different names
             dcsTempFolderPathOpenbeta = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS.openbeta");
             dcsTempFolderPathStable = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS");
             dcsTempFolderPathOpenalpha = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS.openalpha");
@@ -459,8 +465,6 @@ namespace DCS_Update_Witching_Utility
             //    + dcsTempFolderPathOpenalpha + "\r\n");
         }
 
-
-        string dcsInputsFolderPath_zipPath;
 
         private void button_backupInputFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -600,7 +604,7 @@ namespace DCS_Update_Witching_Utility
 
             if (isGoodToProcess == true)
             {
-
+                //=====Caucasus=====
                 //check to see if the folder exists
                 if (Directory.Exists(terrainMetacacheLocation_Caucasus))
                 {
@@ -609,9 +613,10 @@ namespace DCS_Update_Witching_Utility
                 }
                 else
                 {
-                    MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Caucasus + ". Sorry!");
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Caucasus + ". Sorry!");
                 }
 
+                //=====Syria=====
                 //check to see if the folder exists
                 if (Directory.Exists(terrainMetacacheLocation_Syria))
                 {
@@ -620,10 +625,10 @@ namespace DCS_Update_Witching_Utility
                 }
                 else
                 {
-                    MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Syria + ". Sorry!");
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Syria + ". Sorry!");
                 }
 
-
+                //=====theChannel=====
                 //check to see if the folder exists
                 if (Directory.Exists(terrainMetacacheLocation_TheChannel))
                 {
@@ -633,6 +638,68 @@ namespace DCS_Update_Witching_Utility
                 else
                 {
                     //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_TheChannel + ". Sorry!");
+                }
+
+                //=====Nevada=====
+                //check to see if the folder exists
+                if (Directory.Exists(terrainMetacacheLocation_Nevada))
+                {
+                    directoryToDelete = terrainMetacacheLocation_Nevada;
+                    deleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Nevada + ". Sorry!");
+                }
+
+                //=====PersianGulf=====
+                //check to see if the folder exists
+                if (Directory.Exists(terrainMetacacheLocation_PersianGulf))
+                {
+                    directoryToDelete = terrainMetacacheLocation_PersianGulf;
+                    deleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_PersianGulf + ". Sorry!");
+                }
+
+
+                //=====Normandy=====
+                //check to see if the folder exists
+                if (Directory.Exists(terrainMetacacheLocation_Normandy))
+                {
+                    directoryToDelete = terrainMetacacheLocation_Normandy;
+                    deleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Normandy + ". Sorry!");
+                }
+
+
+                //=====Falklands=====
+                //check to see if the folder exists
+                if (Directory.Exists(terrainMetacacheLocation_Falklands))
+                {
+                    directoryToDelete = terrainMetacacheLocation_Falklands;
+                    deleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Falklands + ". Sorry!");
+                }
+
+                //=====Mariana=====
+                //check to see if the folder exists
+                if (Directory.Exists(terrainMetacacheLocation_Mariana))
+                {
+                    directoryToDelete = terrainMetacacheLocation_Mariana;
+                    deleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Mariana + ". Sorry!");
                 }
             }
         }
@@ -802,7 +869,7 @@ namespace DCS_Update_Witching_Utility
             }
             else
             {
-                MessageBox.Show("Please select your 'dcs_updater.exe' file. It is located in the 'bin' folder of where you installed DCS.");
+                //MessageBox.Show("Please select your 'dcs_updater.exe' file. It is located in the 'bin' folder of where you installed DCS.");
             }
         }
 
@@ -824,7 +891,7 @@ namespace DCS_Update_Witching_Utility
             }
             else
             {
-                MessageBox.Show("Please select your 'dcs_updater.exe' file. It is located in the 'bin' folder of where you installed DCS.");
+                //MessageBox.Show("Please select your 'dcs_updater.exe' file. It is located in the 'bin' folder of where you installed DCS.");
             }
         }
 
