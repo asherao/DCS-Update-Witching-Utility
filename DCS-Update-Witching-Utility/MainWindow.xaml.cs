@@ -55,26 +55,43 @@ namespace DCS_Update_Witching_Utility
     {
         //====GLOBALS====
         System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+        System.Windows.Threading.DispatcherTimer imageRotationTimer = new System.Windows.Threading.DispatcherTimer();
 
         public MainWindow()
         {
             InitializeComponent();
             //getVersionNumbers();
-            getInitialVersionNumbers();
+            GetInitialVersionNumbers();
             isDcsExeSelected = false;
             isOptionsLuaSelected = false;
-            loadSaveFile();
+            LoadSaveFile();
 
             textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
 
 
-            dispatcherTimer.Tick += dispatcherTimer_Tick;
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 3);//hours, minutes, seconds
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(0, 2, 0);//hours, minutes, seconds
+
+            imageRotationTimer.Tick += ImageRotationTimer_Tick;
+            imageRotationTimer.Interval = new TimeSpan(0, 0, 1);//hours, minutes, seconds
         }
+        int rotationTracker = 0;
+        private void ImageRotationTimer_Tick(object sender, EventArgs e)
+        {
+            //https://www.c-sharpcorner.com/uploadfile/mahesh/image-transformation-in-wpf/#:~:text=To%20rotate%20an%20image%2C%20we,as%20shown%20in%20below%20code.&text=The%20code%20listed%20in%20Listing,an%20image%20at%20run%2Dtime.&text=The%20ScaleTransform%20is%20used%20to%20scale%20an%20image.
+            image_rotatingUpdate.IsEnabled = true;
+            image_rotatingUpdate.Visibility = Visibility.Visible;
+            RotateTransform transform = new RotateTransform(rotationTracker + 45);
+            image_rotatingUpdate.RenderTransformOrigin = new Point(0.5, 0.5);
+
+            image_rotatingUpdate.RenderTransform = transform;
+            rotationTracker += 45;
+        }
+
         //https://stackoverflow.com/questions/938421/getting-the-applications-directory-from-a-wpf-application
         string appPath = System.AppDomain.CurrentDomain.BaseDirectory;//gets the path of were the utility us running
 
-        private void loadSaveFile()
+        private void LoadSaveFile()
         {
             if (File.Exists(appPath + @"/DCS-Update-Witching-Utility-Settings/UwU-UserSettings.txt"))
             {
@@ -90,18 +107,18 @@ namespace DCS_Update_Witching_Utility
                 textBlock_selectOptionsLua.Text = selected_selectOptionsLua_string;//put the second line in the seecond box
 
                 //figure out the rest of the filepaths
-                generatePathsFromOptionsLuaPath();
+                GeneratePathsFromOptionsLuaPath();
                 isOptionsLuaSelected = true;
 
-                generatePathsFromDcsExePath();
+                GeneratePathsFromDcsExePath();
                 isDcsExeSelected = true;
 
-                checkIfDcsExeAndOptionsLuaHaveBeenSelected();//this should be true
+                CheckIfDcsExeAndOptionsLuaHaveBeenSelected();//this should be true
 
             }
         }
 
-        private void saveUserSettings()
+        private void SaveUserSettings()
         {
             //export the 2 directories that the user choose to a .txt file
 
@@ -118,9 +135,9 @@ namespace DCS_Update_Witching_Utility
             }
         }
         string htmlCode;
-        private void getInitialVersionNumbers()
+        private void GetInitialVersionNumbers()
         {
-            downloadHtmlFile();
+            DownloadHtmlFile();
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-a-text-file-one-line-at-a-time
             //int counter = 0;
 
@@ -162,7 +179,7 @@ namespace DCS_Update_Witching_Utility
 
         }
 
-        private void downloadHtmlFile()
+        private void DownloadHtmlFile()
         {
             using (WebClient client = new WebClient()) // WebClient class inherits IDisposable
             {
@@ -174,17 +191,17 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
             // code goes here
             textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
-            getVersionNumbers();
+            GetVersionNumbers();
             
         }
 
-        private void getVersionNumbers()
+        private void GetVersionNumbers()
         {
-            downloadHtmlFile();
+            DownloadHtmlFile();
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-a-text-file-one-line-at-a-time
             //int counter = 0;
 
@@ -221,9 +238,10 @@ namespace DCS_Update_Witching_Utility
                             button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
                             mediaPlayer.Play();
                             dispatcherTimer.Stop();
+                            imageRotationTimer.Stop();
                             textBlock_time.Text = "Updated: " + DateTime.Now.ToString();
                             textBlock_time.Background = new SolidColorBrush(Colors.LightGreen);
-                            actions_UpdateDcsViaStableButton();//it presses the button to update stable branch
+                            Actions_UpdateDcsViaStableButton();//it presses the button to update stable branch
                         }
                     }
 
@@ -257,9 +275,10 @@ namespace DCS_Update_Witching_Utility
                             button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
                             mediaPlayer.Play();
                             dispatcherTimer.Stop();
+                            imageRotationTimer.Stop();
                             textBlock_time.Text = "Updated: " +  DateTime.Now.ToString();
                             textBlock_time.Background = new SolidColorBrush(Colors.LightGreen);
-                            actions_UpdateDcsViaOpenbetaButton();//it presses the button to update stable branch
+                            Actions_UpdateDcsViaOpenbetaButton();//it presses the button to update stable branch
                             
                         }
                     }
@@ -274,18 +293,18 @@ namespace DCS_Update_Witching_Utility
             //MessageBox.Show("Lines: " + counter);
         }
 
-        private void button_UpdateDCS_Click(object sender, RoutedEventArgs e)//done
+        private void Button_UpdateDCS_Click(object sender, RoutedEventArgs e)//done
         {
-            actions_updateButton();
+            Actions_updateButton();
         }
 
-        private void actions_updateButton()
+        private void Actions_updateButton()
         {
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 //MessageBox.Show("You pressed the Update DCS Button");
-                runDcsUpdater();
+                RunDcsUpdater();
             }
             else
             {
@@ -293,7 +312,7 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void runDcsUpdater()//done
+        private void RunDcsUpdater()//done
         {
             string dcsUpdaterArguement = ("--quiet update");//this makes things easy
 
@@ -307,7 +326,7 @@ namespace DCS_Update_Witching_Utility
         string selected_selectDcsExe_string;
         bool isDcsExeSelected;
         bool isOptionsLuaSelected;
-        private void button_selectDcsExe_Click(object sender, RoutedEventArgs e)
+        private void Button_selectDcsExe_Click(object sender, RoutedEventArgs e)
         {
 
             //Have the select dialog pop up
@@ -326,7 +345,7 @@ namespace DCS_Update_Witching_Utility
                     //the user selected the correct correct file
                     //if the file is the correct one, try to make all of the other file paths that are related
                     //to that part of the folder system
-                    generatePathsFromDcsExePath();
+                    GeneratePathsFromDcsExePath();
                     textBlock_selectDcsExe.Text = selected_selectDcsExe;
                     isDcsExeSelected = true;
 
@@ -345,7 +364,7 @@ namespace DCS_Update_Witching_Utility
 
 
         string selected_selectOptionsLua_string;
-        private void button_selectOptionsLua_Click(object sender, RoutedEventArgs e)
+        private void Button_selectOptionsLua_Click(object sender, RoutedEventArgs e)
         {
             //Have the select dialog pop up
             //the user picks their options.lua
@@ -364,7 +383,7 @@ namespace DCS_Update_Witching_Utility
                     //the user selected the correct correct file
                     //if the file is the correct one, try to make all of the other file paths that are related
                     //to that part of the folder system
-                    generatePathsFromOptionsLuaPath();
+                    GeneratePathsFromOptionsLuaPath();
                     textBlock_selectOptionsLua.Text = selected_selectOptionsLua;
                     isOptionsLuaSelected = true;
                 }
@@ -389,7 +408,7 @@ namespace DCS_Update_Witching_Utility
         string terrainMetacacheLocation_Mariana;
         string dcsInstallDirectory;
 
-        private void generatePathsFromDcsExePath()
+        private void GeneratePathsFromDcsExePath()
         {
             //generate paths here
             //you need a path for each map
@@ -432,7 +451,7 @@ namespace DCS_Update_Witching_Utility
         string dcsTempFolderPathStable;
         string dcsConfigFolderPath;
 
-        private void generatePathsFromOptionsLuaPath()
+        private void GeneratePathsFromOptionsLuaPath()
         {
             //generate paths here
             dcsSavedGamesDirectory = Path.GetFullPath(Path.Combine(selected_selectOptionsLua_string, @"..\..\"));
@@ -468,15 +487,15 @@ namespace DCS_Update_Witching_Utility
         }
 
 
-        private void button_backupInputFolder_Click(object sender, RoutedEventArgs e)
+        private void Button_backupInputFolder_Click(object sender, RoutedEventArgs e)
         {
-            actions_backupInputFolderButton();
+            Actions_backupInputFolderButton();
         }
 
-        private void actions_backupInputFolderButton()
+        private void Actions_backupInputFolderButton()
         {
             //back up the input folder by zipping the contents and dating the folder with date and time
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             //MessageBox.Show("Zipping " + dcsInputsFolderPath);
             {
@@ -501,22 +520,22 @@ namespace DCS_Update_Witching_Utility
         }
 
         string directoryToDelete;
-        private void button_clearFxoFolder_Click(object sender, RoutedEventArgs e)
+        private void Button_clearFxoFolder_Click(object sender, RoutedEventArgs e)
         {
-            actions_clearFxoFolderButton();
+            Actions_clearFxoFolderButton();
         }
 
-        private void actions_clearFxoFolderButton()
+        private void Actions_clearFxoFolderButton()
         {
             //clear the FXO folder
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 //check to see if the folder exists
                 if (Directory.Exists(dcsFxoFolderPath))
                 {
                     directoryToDelete = dcsFxoFolderPath;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -525,7 +544,7 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void deleteAllFilesInTheDirectory()
+        private void DeleteAllFilesInTheDirectory()
         {
             //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
             string sMessageBoxText = "You are about to delete all of the files located in: '" + directoryToDelete + "'\r\n" +
@@ -564,22 +583,22 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_clearmetashaders2Folder_Click(object sender, RoutedEventArgs e)
+        private void Button_clearmetashaders2Folder_Click(object sender, RoutedEventArgs e)
         {
-            actions_clearmetashaders2FolderButton();
+            Actions_clearmetashaders2FolderButton();
         }
 
-        private void actions_clearmetashaders2FolderButton()
+        private void Actions_clearmetashaders2FolderButton()
         {
             //clear the metashaders folder
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 //check to see if the folder exists
                 if (Directory.Exists(dcsMetashaders2FolderPath))
                 {
                     directoryToDelete = dcsMetashaders2FolderPath;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -588,12 +607,12 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_clearTerrainShaders_Click(object sender, RoutedEventArgs e)
+        private void Button_clearTerrainShaders_Click(object sender, RoutedEventArgs e)
         {
-            actions_clearTerrainShadersButton();
+            Actions_clearTerrainShadersButton();
         }
 
-        private void actions_clearTerrainShadersButton()
+        private void Actions_clearTerrainShadersButton()
         {
             //clear the contents of the map terrain shaders folders
             //identifty the proper location
@@ -602,7 +621,7 @@ namespace DCS_Update_Witching_Utility
             //check to see if the above file paths exist
             //delete the contents of the identified folders
 
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
 
             if (isGoodToProcess == true)
             {
@@ -611,7 +630,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_Caucasus))
                 {
                     directoryToDelete = terrainMetacacheLocation_Caucasus;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -623,7 +642,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_Syria))
                 {
                     directoryToDelete = terrainMetacacheLocation_Syria;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -635,7 +654,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_TheChannel))
                 {
                     directoryToDelete = terrainMetacacheLocation_TheChannel;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -647,7 +666,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_Nevada))
                 {
                     directoryToDelete = terrainMetacacheLocation_Nevada;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -659,7 +678,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_PersianGulf))
                 {
                     directoryToDelete = terrainMetacacheLocation_PersianGulf;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -672,7 +691,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_Normandy))
                 {
                     directoryToDelete = terrainMetacacheLocation_Normandy;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -685,7 +704,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_Falklands))
                 {
                     directoryToDelete = terrainMetacacheLocation_Falklands;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -697,7 +716,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(terrainMetacacheLocation_Mariana))
                 {
                     directoryToDelete = terrainMetacacheLocation_Mariana;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -707,12 +726,12 @@ namespace DCS_Update_Witching_Utility
         }
 
         bool isGoodToProcess;
-        private void checkIfDcsExeAndOptionsLuaHaveBeenSelected()
+        private void CheckIfDcsExeAndOptionsLuaHaveBeenSelected()
         {
             if (isOptionsLuaSelected == true && isDcsExeSelected == true)
             {
                 isGoodToProcess = true;
-                saveUserSettings();
+                SaveUserSettings();
             }
             else
             {
@@ -721,24 +740,24 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_DcsTempFolder_Click(object sender, RoutedEventArgs e)
+        private void Button_DcsTempFolder_Click(object sender, RoutedEventArgs e)
         {
-            actions_DcsTempFolderButton();
+            Actions_DcsTempFolderButton();
         }
 
-        private void actions_DcsTempFolderButton()
+        private void Actions_DcsTempFolderButton()
         {
             //clears the dcs temp folder
             //identify the locaton of the folder
             //clear the folder (check to make sure there isnt anything important in there)
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 //check to see if the folder exists
                 if (Directory.Exists(dcsTempFolderPathStable))
                 {
                     directoryToDelete = dcsTempFolderPathStable;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -748,7 +767,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(dcsTempFolderPathOpenalpha))
                 {
                     directoryToDelete = dcsTempFolderPathOpenalpha;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -758,7 +777,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(dcsTempFolderPathOpenbeta))
                 {
                     directoryToDelete = dcsTempFolderPathOpenbeta;
-                    deleteAllFilesInTheDirectory();
+                    DeleteAllFilesInTheDirectory();
                 }
                 else
                 {
@@ -767,12 +786,12 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_WitchEverything_Click(object sender, RoutedEventArgs e)
+        private void Button_WitchEverything_Click(object sender, RoutedEventArgs e)
         {
-            actions_WitchEverythingButton();
+            Actions_WitchEverythingButton();
         }
 
-        private void actions_WitchEverythingButton()
+        private void Actions_WitchEverythingButton()
         {
             //have an "Are you sure?" dialog pop up
             //if yes:
@@ -780,7 +799,7 @@ namespace DCS_Update_Witching_Utility
             //do all of the clearing 
             //and then run the updater in quiet mode
 
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
@@ -798,12 +817,12 @@ namespace DCS_Update_Witching_Utility
                 {
                     case MessageBoxResult.Yes:
                         //do all the stuff here
-                        actions_backupInputFolderButton();
-                        actions_backupConfigFolderButton();
-                        actions_clearFxoFolderButton();
-                        actions_clearmetashaders2FolderButton();
-                        actions_clearTerrainShadersButton();
-                        actions_DcsTempFolderButton();
+                        Actions_backupInputFolderButton();
+                        Actions_backupConfigFolderButton();
+                        Actions_clearFxoFolderButton();
+                        Actions_clearmetashaders2FolderButton();
+                        Actions_clearTerrainShadersButton();
+                        Actions_DcsTempFolderButton();
                         //actions_updateButton(); TODO:Remove This
                         break;
 
@@ -822,15 +841,15 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_backupConfigFolder_Click(object sender, RoutedEventArgs e)
+        private void Button_backupConfigFolder_Click(object sender, RoutedEventArgs e)
         {
-            actions_backupConfigFolderButton();
+            Actions_backupConfigFolderButton();
         }
 
-        private void actions_backupConfigFolderButton()
+        private void Actions_backupConfigFolderButton()
         {
             //back up the input folder by zipping the contents and dating the folder with date and time
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             //MessageBox.Show("Zipping " + dcsConfigFolderPath);
             {
@@ -854,14 +873,14 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_UpdateDcsViaStable_Click(object sender, RoutedEventArgs e)
+        private void Button_UpdateDcsViaStable_Click(object sender, RoutedEventArgs e)
         {
-            actions_UpdateDcsViaStableButton();
+            Actions_UpdateDcsViaStableButton();
         }
 
-        private void actions_UpdateDcsViaStableButton()
+        private void Actions_UpdateDcsViaStableButton()
         {
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 string strCmdText;
@@ -875,14 +894,14 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_UpdateDcsViaOpenbeta_Click(object sender, RoutedEventArgs e)
+        private void Button_UpdateDcsViaOpenbeta_Click(object sender, RoutedEventArgs e)
         {
-            actions_UpdateDcsViaOpenbetaButton();
+            Actions_UpdateDcsViaOpenbetaButton();
         }
 
-        private void actions_UpdateDcsViaOpenbetaButton()
+        private void Actions_UpdateDcsViaOpenbetaButton()
         {
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 string strCmdText;
@@ -897,49 +916,51 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_autoUpdateDcsViaStable_Click(object sender, RoutedEventArgs e)
+        private void Button_autoUpdateDcsViaStable_Click(object sender, RoutedEventArgs e)
         {
-            actions_autoUpdateDcsViaStableButton();
+            Actions_autoUpdateDcsViaStableButton();
         }
 
         bool isStableAutoUpdateOn;
         bool isOpenbetaAutoUpdateOn;
 
-        private void actions_autoUpdateDcsViaStableButton()
+        private void Actions_autoUpdateDcsViaStableButton()
         {
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 isStableAutoUpdateOn = true;
                 dispatcherTimer.Start();
+                imageRotationTimer.Start();
                 button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
             }
         }
 
-        private void button_autoUpdateDcsViaOpenbeta_Click(object sender, RoutedEventArgs e)
+        private void Button_autoUpdateDcsViaOpenbeta_Click(object sender, RoutedEventArgs e)
         {
-            actions_autoUpdateDcsViaOpenbetaButton();
+            Actions_autoUpdateDcsViaOpenbetaButton();
         }
 
-        private void actions_autoUpdateDcsViaOpenbetaButton()
+        private void Actions_autoUpdateDcsViaOpenbetaButton()
         {
 
-            checkIfDcsExeAndOptionsLuaHaveBeenSelected();
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 isOpenbetaAutoUpdateOn = true;
                 dispatcherTimer.Start();
+                imageRotationTimer.Start();
                 button_autoUpdateDcsViaStable.IsEnabled = false;
             }
         }
         private MediaPlayer mediaPlayer = new MediaPlayer();
-        private void button_pickAutoUpdateSound_Click(object sender, RoutedEventArgs e)
+        private void Button_pickAutoUpdateSound_Click(object sender, RoutedEventArgs e)
         {
-            actions_pickAutoUpdateSoundButton();
+            Actions_pickAutoUpdateSoundButton();
 
         }
 
-        private void actions_pickAutoUpdateSoundButton()
+        private void Actions_pickAutoUpdateSoundButton()
         {
             //https://www.wpf-tutorial.com/audio-video/playing-audio/
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -951,36 +972,71 @@ namespace DCS_Update_Witching_Utility
             }
         }
 
-        private void button_stopSound_Click(object sender, RoutedEventArgs e)
+        private void Button_stopSound_Click(object sender, RoutedEventArgs e)
         {
-            actions_stopSoundButton();
+            Actions_stopSoundButton();
 
         }
 
-        private void actions_stopSoundButton()
+        private void Actions_stopSoundButton()
         {
             mediaPlayer.Stop();
         }
 
         //this does not work
-        private void textBlock_selectDcsExe_rightUp(object sender, MouseButtonEventArgs e)
+        private void TextBlock_selectDcsExe_rightUp(object sender, MouseButtonEventArgs e)
         {
             textBlock_selectDcsExe.Text = null;
         }
         //this does not work
-        private void textBlock_selectOptionsLua_rightUp(object sender, MouseButtonEventArgs e)
+        private void TextBlock_selectOptionsLua_rightUp(object sender, MouseButtonEventArgs e)
         {
             textBlock_selectOptionsLua.Text = null;
         }
 
-        private void button_selectDcsExe_rightUp(object sender, MouseButtonEventArgs e)
+        private void Button_selectDcsExe_rightUp(object sender, MouseButtonEventArgs e)
         {
             textBlock_selectDcsExe.Text = null;
         }
 
-        private void button_selectOptionsLua_rightUp(object sender, MouseButtonEventArgs e)
+        private void Button_selectOptionsLua_rightUp(object sender, MouseButtonEventArgs e)
         {
             textBlock_selectOptionsLua.Text = null;
         }
+    
+        private void TextBlock_time_rightUp(object sender, MouseButtonEventArgs e)
+        {
+            //this does not work
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
+            MessageBox.Show("Check interval is now 5 seconds.");
+        }
+       
+        private void TextBlock_time_leftDown(object sender, MouseButtonEventArgs e)
+        {
+            //this does not work
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
+            MessageBox.Show("Check interval is now 5 seconds.");
+        }
+
+        private void TextBlock_time_mouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            //this does not work
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
+            MessageBox.Show("Check interval is now 5 seconds.");
+        }
+
+       
+        
+        private void Button_WitchEverything_rightUp(object sender, MouseButtonEventArgs e)
+        {
+            //this one actually works
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
+            //MessageBox.Show("Check interval is now 5 seconds.");
+            textBlock_time.Foreground = new SolidColorBrush(Colors.Blue);
+
+           
+        }
+
+
     }
 }

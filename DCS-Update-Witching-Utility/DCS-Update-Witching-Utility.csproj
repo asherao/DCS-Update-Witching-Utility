@@ -101,5 +101,14 @@
   <ItemGroup>
     <Resource Include="DCS-UwU.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\refresh_normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\rotatingImage.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\rotatingImage.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
