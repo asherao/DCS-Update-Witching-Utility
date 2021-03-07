@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Diagnostics;
-using System.ComponentModel;
 using Microsoft.Win32;
 using System.IO;
 using System.IO.Compression;
@@ -20,23 +10,22 @@ using System.Net;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Welcome to DCS-UwU (Update Witching Utility). DCS-UwU contains the following features:
-/// -Updates DCS when the update is available
-/// -The ability to back up the Inputs folder
-/// -The ability to clear the DCS fxo folder
-/// -The ability to clear the DCS metashaders2 folder
-/// -The ability to clear the DCS terrain shaders
-/// -The ability to clear the DCS temp folder
+/// Welcome to DCS Update Witching Utility. DCS-UwU contains the following features:
+/// -Standalone and Steam Integration
+/// -Backup Input Folder
+/// -Backup Config Folder
+/// -Clear Metashaders2 Folder
+/// -Clear FXO Folder
+/// -Clear DCS Temp Folder
+/// -Clear Terrain Metacache Folder
+/// -Update DCS via Stable or Openbeta (switch branches)
+/// -Auto Update DCS Stable or Openbeta
+/// -Pick Auto Update Sound (“Yay!” music)
 /// </summary>
-/// 
 
 /// <Notes>
-/// -Updates DCS when the update is available (reference G:\Games\DCS World OpenBeta\autoupdate.cfg)
-/// -The ability to back up the Inputs folder (located at C:\Users\Bailey\Saved Games\DCS.openbeta\Config\Input)
-/// -The ability to clear the DCS fxo folder (located at C:\Users\Bailey\Saved Games\DCS.openbeta\fxo)
-/// -The ability to clear the DCS metashaders2 folder (located at C:\Users\Bailey\Saved Games\DCS.openbeta\metashaders2)
-/// -The ability to clear the DCS terrain shaders (located at G:\Games\DCS World OpenBeta\Mods\terrains\Caucasus\misc\metacache\dcs)
-/// -The ability to clear the DCS Temp Folder (located at C:\Users\Bailey\AppData\Local\Temp\DCS.openbeta)
+/// Steam users will have to do a workaround to use the backup and cleaning functions. It
+/// is noted in the Readme.
 /// </Notes>
 
 //Resources
@@ -48,162 +37,170 @@ namespace DCS_Update_Witching_Utility
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    /// 
-
 
     public partial class MainWindow : Window
     {
         //====GLOBALS====
+        //the dispatcher timer is for the check that goes to the dcs updates site
         System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+        //the image rotation timer is to show the user that the utility is still checking between dispatch timer updates
         System.Windows.Threading.DispatcherTimer imageRotationTimer = new System.Windows.Threading.DispatcherTimer();
+
+        //tracks if the files are selected
+        bool isDcsExeSelected;
+        bool isOptionsLuaSelected;
 
         public MainWindow()
         {
             InitializeComponent();
-            //getVersionNumbers();
-            GetInitialVersionNumbers();
-            isDcsExeSelected = false;
-            isOptionsLuaSelected = false;
-            LoadSaveFile();
+            //if for some readon the website check does not happen correctly
+            //his will remain invisible and not look weird.
+            textBlock_time.Visibility = Visibility.Hidden;
+            GetInitialVersionNumbers();//used to get the version numbers on launch
+            isDcsExeSelected = false;//the init for the value
+            isOptionsLuaSelected = false;//the init for the value
 
-            textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
+            LoadSaveFile();//if the save file is present, this will load it
+            
+            dispatcherTimer.Tick += DispatcherTimer_Tick;//creates the tick even for this timer
+            dispatcherTimer.Interval = new TimeSpan(0, 2, 0);//hours, minutes, seconds. As you can see, this will check the site ever 2 minutes
 
-
-            dispatcherTimer.Tick += DispatcherTimer_Tick;
-            dispatcherTimer.Interval = new TimeSpan(0, 2, 0);//hours, minutes, seconds
-
-            imageRotationTimer.Tick += ImageRotationTimer_Tick;
-            imageRotationTimer.Interval = new TimeSpan(0, 0, 1);//hours, minutes, seconds
+            imageRotationTimer.Tick += ImageRotationTimer_Tick;//creates the tick even for this timer
+            imageRotationTimer.Interval = new TimeSpan(0, 0, 1);//hours, minutes, seconds. As you can see, this will rotate the image every 1 second
+            //higher rate of rotation with lower angle rotations are possible, but they take more CPU
         }
-        int rotationTracker = 0;
-        private void ImageRotationTimer_Tick(object sender, EventArgs e)
+
+        int rotationTracker = 0;//this is the init for the rotation tracker. the number goes up and  up and up...
+
+        private void ImageRotationTimer_Tick(object sender, EventArgs e)//what happens every time the rotation timer ticks
         {
             //https://www.c-sharpcorner.com/uploadfile/mahesh/image-transformation-in-wpf/#:~:text=To%20rotate%20an%20image%2C%20we,as%20shown%20in%20below%20code.&text=The%20code%20listed%20in%20Listing,an%20image%20at%20run%2Dtime.&text=The%20ScaleTransform%20is%20used%20to%20scale%20an%20image.
-            image_rotatingUpdate.IsEnabled = true;
-            image_rotatingUpdate.Visibility = Visibility.Visible;
-            RotateTransform transform = new RotateTransform(rotationTracker + 45);
-            image_rotatingUpdate.RenderTransformOrigin = new Point(0.5, 0.5);
+            image_rotatingUpdate.IsEnabled = true;//make sure that the image is enabled (maybe not necessary)
+            image_rotatingUpdate.Visibility = Visibility.Visible;//make sure that the image is visible
+            RotateTransform transform = new RotateTransform(rotationTracker + 45);//add 45 to the previous rotation
+            image_rotatingUpdate.RenderTransformOrigin = new Point(0.5, 0.5);//make sure the rotation happens in the middle
 
-            image_rotatingUpdate.RenderTransform = transform;
-            rotationTracker += 45;
+            image_rotatingUpdate.RenderTransform = transform;//this is the command that actually rotates the image
+            rotationTracker += 45;//add 45 degrees to the tracker so that it can be used again for the next tick
         }
 
         //https://stackoverflow.com/questions/938421/getting-the-applications-directory-from-a-wpf-application
-        string appPath = System.AppDomain.CurrentDomain.BaseDirectory;//gets the path of were the utility us running
+        string appPath = System.AppDomain.CurrentDomain.BaseDirectory;//gets the path of were the utility is running
 
         private void LoadSaveFile()
         {
+            //if the save/load file is found
             if (File.Exists(appPath + @"/DCS-Update-Witching-Utility-Settings/UwU-UserSettings.txt"))
             {
-                //MessageBox.Show("Loading...");
-                System.IO.StreamReader file = new System.IO.StreamReader(appPath + @"/DCS-Update-Witching-Utility-Settings/UwU-UserSettings.txt");
+                //MessageBox.Show("Loading...");//debugging
                 //read the file line by line. Assumes the lines are properly formated via the saveSettings method
                 //e.g. first line is the users dcs.exe location. The second line is the users options.lua location
-
+                System.IO.StreamReader file = new System.IO.StreamReader(appPath + @"/DCS-Update-Witching-Utility-Settings/UwU-UserSettings.txt");
+                
                 selected_selectDcsExe_string = file.ReadLine();//read the first line
                 selected_selectOptionsLua_string = file.ReadLine();//read the second line
-                file.Close();
+                file.Close();//close the file because we are done with it
                 textBlock_selectDcsExe.Text = selected_selectDcsExe_string;//put the first line in the first box
                 textBlock_selectOptionsLua.Text = selected_selectOptionsLua_string;//put the second line in the seecond box
 
                 //figure out the rest of the filepaths
-                GeneratePathsFromOptionsLuaPath();
-                isOptionsLuaSelected = true;
-
-                GeneratePathsFromDcsExePath();
+                GeneratePathsFromDcsExePath();//makes the rest of the filepaths that concern this path
                 isDcsExeSelected = true;
+                textBlock_selectDcsExe.BorderBrush = Brushes.LightGreen;//visual feedback for the user
 
-                CheckIfDcsExeAndOptionsLuaHaveBeenSelected();//this should be true
+                GeneratePathsFromOptionsLuaPath();
+                isOptionsLuaSelected = true;//makes the rest of the filepaths that concern this path
+                textBlock_selectOptionsLua.BorderBrush = Brushes.LightGreen;//visual feedback for the user
 
+                CheckIfDcsExeAndOptionsLuaHaveBeenSelected();//this should be true because we just set the stuff
             }
         }
 
         private void SaveUserSettings()
         {
+            //you could use Json stuff, but we only need 2 lines in this utility.
             //export the 2 directories that the user choose to a .txt file
-
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-write-to-a-text-file
-            //string[] exportLines = { fullPath_dcsExe, fullPath_optionsLua, customWidth, customHeight };
             Directory.CreateDirectory(appPath + "\\DCS-Update-Witching-Utility-Settings");//creates the save folder
-            //File.WriteAllLines(appPath + "\\DCS-Resolution-Launcher-Settings\\DReLa-UserSettings.txt", exportLines);
-            ////https://docs.microsoft.com/en-us/dotnet/api/system.io.streamwriter?redirectedfrom=MSDN&view=netcore-3.1
+            //https://docs.microsoft.com/en-us/dotnet/api/system.io.streamwriter?redirectedfrom=MSDN&view=netcore-3.1
+            //write the following ot the text file
             using (StreamWriter sw = File.CreateText(appPath + "\\DCS-Update-Witching-Utility-Settings\\UwU-UserSettings.txt"))
             {
                 sw.WriteLine(selected_selectDcsExe_string);
                 sw.WriteLine(selected_selectOptionsLua_string);
-                sw.Close();
+                sw.Close();//close the file because we are done writing to it
             }
         }
-        string htmlCode;
+
+        string htmlCode;//this will contain the html code that was downloaded from the site (or the file when debugging)
+
         private void GetInitialVersionNumbers()
         {
-            DownloadHtmlFile();
+            DownloadHtmlFile();//downloads the fole from the location
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-a-text-file-one-line-at-a-time
-            //int counter = 0;
+            //int counter = 0;//debugging
 
-            // Read the file and display it line by line.  
+            //Read the file line by line.  
             StringReader reader = new StringReader(htmlCode);
-            while ((htmlCode = reader.ReadLine()) != null)
+            while ((htmlCode = reader.ReadLine()) != null)//while you read the lines and havent got to the end of the file...
             {
-                //System.Console.WriteLine(line);
-                if (htmlCode.Contains("Latest stable version is"))
+                //System.Console.WriteLine(line);//debugging
+                if (htmlCode.Contains("Latest stable version is"))//if the line contains this phrase
                 {
-                    int indexOfWordStable = htmlCode.IndexOf("changelog/") + 10;
-                    int indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfWordStable) + 1;
-                    indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfSlashAfterVersionNumber);
+                    int indexOfWordStable = htmlCode.IndexOf("changelog/") + 10;//count backwards to get the end of the phrase
+                    int indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfWordStable) + 1;//this is here to skip the next index of the slash
+                    indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfSlashAfterVersionNumber);//gets the index of the second slash
+                    //the syntax for the version number string
                     string stableVersionNumber = htmlCode.Substring(indexOfWordStable, indexOfSlashAfterVersionNumber - indexOfWordStable);
-                    //MessageBox.Show("Stable is version: " + stableVersionNumber);
+                    //MessageBox.Show("Stable is version: " + stableVersionNumber);//debugging
                     //if you dont do this, the result will be something like "openbeta/2.3.4.12345.3"
                     stableVersionNumber = Regex.Replace(stableVersionNumber, "[^0-9.]", "");//https://stackoverflow.com/questions/3624332/how-do-you-remove-all-the-alphabetic-characters-from-a-string
                     textBlock_stableVersionNumber.Text = ("Latest stable version is: " + stableVersionNumber);
-
                 }
-                if (htmlCode.Contains("Current openbeta is"))
+                if (htmlCode.Contains("Current openbeta is"))//similar to what was done above
                 {
                     int indexOfWordStable = htmlCode.IndexOf("changelog/") + 10;
                     int indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfWordStable) + 1;
                     indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfSlashAfterVersionNumber);
                     string openBetaVersionNumber = htmlCode.Substring(indexOfWordStable, indexOfSlashAfterVersionNumber - indexOfWordStable);
-                    //MessageBox.Show("Stable is version: " + openBetaVersionNumber);
+                    //MessageBox.Show("Stable is version: " + openBetaVersionNumber);//debugging
                     openBetaVersionNumber = Regex.Replace(openBetaVersionNumber, "[^0-9.]", "");
                     textBlock_openBetaVersionNumber.Text = ("Current openbeta is: " + openBetaVersionNumber);
                 }
-                //counter++;
+                //counter++;//debugging
             }
 
-            reader.Close();
-            //System.Console.WriteLine("There were {0} lines.", counter);
-            // Suspend the screen.  
-            //System.Console.ReadLine();
-            //MessageBox.Show("Lines: " + counter);
-
+            reader.Close();//close the file because we are done using it
+            //System.Console.WriteLine("There were {0} lines.", counter);//debugging
+            //MessageBox.Show("Lines: " + counter);//debugging
+            textBlock_time.Visibility = Visibility.Visible;
+            textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();//updates the string
         }
 
-        private void DownloadHtmlFile()
+        private void DownloadHtmlFile()//downloads the file
         {
             using (WebClient client = new WebClient()) // WebClient class inherits IDisposable
             {
-                // Or you can get the file content without saving it
-                //htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
-                //htmlCode = File.ReadAllText(@"E:\Downloads\[TEMP]\DCS World Updates2.html");//TODO: Remove this after testing is finished
-                
-                htmlCode = File.ReadAllText(@"D:\Downloads\DCS World Updates.html");//TODO: Remove this after testing is finished
+                htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
+                //htmlCode = File.ReadAllText(@"C:\Downloads\DCS World Updates.html");//debug esting location
             }
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            // code goes here
-            textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
+            //every time this timer ticks, the version numbers get checked
             GetVersionNumbers();
-            
         }
 
         private void GetVersionNumbers()
         {
-            DownloadHtmlFile();
+            //this is almost exactly the same as the GetInitialVersionNumbers() method
+            //The main differences are:
+            //-stops timers if there was an appropiate change
+            //-changes the color of the text backgrounds when there is a change
+            DownloadHtmlFile();//downloads the info
             //https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-a-text-file-one-line-at-a-time
-            //int counter = 0;
+            //int counter = 0;//debugging
 
             // Read the file and display it line by line.  
             StringReader reader = new StringReader(htmlCode);
@@ -220,7 +217,8 @@ namespace DCS_Update_Witching_Utility
                     //MessageBox.Show("Stable is version: " + stableVersionNumber);
                     //if you dont do this, the result will be something like "openbeta/2.3.4.12345.3"
                     stableVersionNumberNew = Regex.Replace(stableVersionNumberNew, "[^0-9.]", "");//https://stackoverflow.com/questions/3624332/how-do-you-remove-all-the-alphabetic-characters-from-a-string
-                    if (textBlock_stableVersionNumber.Text.Equals("Latest stable version is: " + stableVersionNumberNew))//if the numbers where the same, there was no update
+                    //if the numbers where the same, there was no update
+                    if (textBlock_stableVersionNumber.Text.Equals("Latest stable version is: " + stableVersionNumberNew))
                     {
                         textBlock_stableVersionNumber.Text = ("Latest stable version is: " + stableVersionNumberNew);
                     }
@@ -228,19 +226,19 @@ namespace DCS_Update_Witching_Utility
                     { //the numbers were likely different
                         //this goes here so that it can be updated regardless if it was the one being monitored
                         textBlock_stableVersionNumber.Text = ("Latest stable version is: " + stableVersionNumberNew);
-                        textBlock_stableVersionNumber.Background = new SolidColorBrush(Colors.LightGreen);
+                        textBlock_stableVersionNumber.Background = new SolidColorBrush(Colors.LightGreen);//color changed for user feedback
                         if (isStableAutoUpdateOn == true)
                         {
                             //MessageBox.Show(textBlock_stableVersionNumber.Text + "\r\n" +
                             //    stableVersionNumberNew);
-                            
+                            //trigger all the stuff that signals that there was an appropiate change
                             button_autoUpdateDcsViaStable.IsEnabled = false;
                             button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
                             mediaPlayer.Play();
                             dispatcherTimer.Stop();
                             imageRotationTimer.Stop();
                             textBlock_time.Text = "Updated: " + DateTime.Now.ToString();
-                            textBlock_time.Background = new SolidColorBrush(Colors.LightGreen);
+                            textBlock_time.Background = new SolidColorBrush(Colors.LightGreen);//color changed for user feedback
                             Actions_UpdateDcsViaStableButton();//it presses the button to update stable branch
                         }
                     }
@@ -248,7 +246,7 @@ namespace DCS_Update_Witching_Utility
 
                 }
 
-                if (htmlCode.Contains("Current openbeta is"))
+                if (htmlCode.Contains("Current openbeta is"))//this is basically the same as the above, but for openbeta
                 {
                     int indexOfWordStable = htmlCode.IndexOf("changelog/") + 10;
                     int indexOfSlashAfterVersionNumber = htmlCode.IndexOf("/", indexOfWordStable) + 1;
@@ -283,39 +281,19 @@ namespace DCS_Update_Witching_Utility
                         }
                     }
                 }
-                //counter++;
+                //counter++;//debugging
             }
 
             reader.Close();
-            //System.Console.WriteLine("There were {0} lines.", counter);
-            // Suspend the screen.  
-            //System.Console.ReadLine();
-            //MessageBox.Show("Lines: " + counter);
+            //System.Console.WriteLine("There were {0} lines.", counter);//debugging
+            //MessageBox.Show("Lines: " + counter);//debugging
+            textBlock_time.Text = "Last Checked: " + DateTime.Now.ToString();
         }
 
-        private void Button_UpdateDCS_Click(object sender, RoutedEventArgs e)//done
-        {
-            Actions_updateButton();
-        }
 
-        private void Actions_updateButton()
+        private void RunDcsUpdater()//This is old. Can stay here for reference
         {
-            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
-            if (isGoodToProcess == true)
-            {
-                //MessageBox.Show("You pressed the Update DCS Button");
-                RunDcsUpdater();
-            }
-            else
-            {
-                //dont do anything. This condition is already caught.
-            }
-        }
-
-        private void RunDcsUpdater()//done
-        {
-            string dcsUpdaterArguement = ("--quiet update");//this makes things easy
-
+            string dcsUpdaterArguement = ("--quiet update");//this makes things easier for the update itself. Requires a certian version of the dcs updater.
             ProcessStartInfo startInfo = new ProcessStartInfo(selected_selectDcsExe_string, dcsUpdaterArguement);//uses the "quiet update" arguement 
             startInfo.WindowStyle = ProcessWindowStyle.Minimized;
             //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden; //this hides the program entirely. not want i want
@@ -324,23 +302,21 @@ namespace DCS_Update_Witching_Utility
         }
 
         string selected_selectDcsExe_string;
-        bool isDcsExeSelected;
-        bool isOptionsLuaSelected;
+
         private void Button_selectDcsExe_Click(object sender, RoutedEventArgs e)
         {
-
             //Have the select dialog pop up
             OpenFileDialog openFileDialog_selectDcsExe = new OpenFileDialog();
-            openFileDialog_selectDcsExe.InitialDirectory = "c:\\Program Files\\Eagle Dynamics\\DCS World\\bin\\";//likely not necessary, but it may help
+            openFileDialog_selectDcsExe.InitialDirectory = "C:\\Program Files\\Eagle Dynamics\\DCS World\\bin\\";//likely not necessary, but it may help
             openFileDialog_selectDcsExe.Filter = "Application files (*.exe)|*.exe";//pick an exe only
-            openFileDialog_selectDcsExe.RestoreDirectory = true;
-            openFileDialog_selectDcsExe.Title = "Select DCS.exe (Hint: C:\\Something\\Something2\\Something3\\bin\\DCS.exe";//TODO: Update this
-            //the user picks their dcs.exe
+            openFileDialog_selectDcsExe.RestoreDirectory = true;//sure, but not necessary
+            openFileDialog_selectDcsExe.Title = "Select DCS_updater.exe (Hint: C:\\Install Location\\bin\\DCS_updater.exe";//hints for all kinds of installs
+            //the user picks their dcs-updater.exe
             if (openFileDialog_selectDcsExe.ShowDialog() == true)
             {
                 var selected_selectDcsExe = openFileDialog_selectDcsExe.FileName;
                 selected_selectDcsExe_string = selected_selectDcsExe.ToString();
-                if (selected_selectDcsExe.Contains("DCS_updater.exe"))
+                if (selected_selectDcsExe.Contains("DCS_updater.exe"))//check to make sure that the file they pick is the correct one
                 {
                     //the user selected the correct correct file
                     //if the file is the correct one, try to make all of the other file paths that are related
@@ -348,7 +324,7 @@ namespace DCS_Update_Witching_Utility
                     GeneratePathsFromDcsExePath();
                     textBlock_selectDcsExe.Text = selected_selectDcsExe;
                     isDcsExeSelected = true;
-
+                    textBlock_selectDcsExe.BorderBrush = Brushes.LightGreen;//visual feedback
                 }
                 else
                 {
@@ -362,8 +338,9 @@ namespace DCS_Update_Witching_Utility
 
 
 
-
         string selected_selectOptionsLua_string;
+
+        //similar to Button_selectDcsExe_Click(), but for the options.lua
         private void Button_selectOptionsLua_Click(object sender, RoutedEventArgs e)
         {
             //Have the select dialog pop up
@@ -371,9 +348,9 @@ namespace DCS_Update_Witching_Utility
             OpenFileDialog openFileDialog_selectOptionsLua = new OpenFileDialog();
             openFileDialog_selectOptionsLua.InitialDirectory = "c:\\Users";//gets closer to the location of the file
             openFileDialog_selectOptionsLua.Filter = "lua files (*.lua)|*.lua";//select lua files only
-            openFileDialog_selectOptionsLua.RestoreDirectory = true;
+            openFileDialog_selectOptionsLua.RestoreDirectory = true;//not exactly necessary
             openFileDialog_selectOptionsLua.Title = "Select options.lua (Hint: C:\\Users\\YOURNAME\\Saved Games\\DCS\\Config\\options.lua";
-            //the user picks their dcs.exe
+            //the user picks their options.lua
             if (openFileDialog_selectOptionsLua.ShowDialog() == true)
             {
                 var selected_selectOptionsLua = openFileDialog_selectOptionsLua.FileName;
@@ -386,6 +363,7 @@ namespace DCS_Update_Witching_Utility
                     GeneratePathsFromOptionsLuaPath();
                     textBlock_selectOptionsLua.Text = selected_selectOptionsLua;
                     isOptionsLuaSelected = true;
+                    textBlock_selectOptionsLua.BorderBrush = Brushes.LightGreen;
                 }
                 else
                 {
@@ -398,49 +376,32 @@ namespace DCS_Update_Witching_Utility
         }
 
 
-        string terrainMetacacheLocation_Caucasus;
-        string terrainMetacacheLocation_PersianGulf;
-        string terrainMetacacheLocation_Syria;
-        string terrainMetacacheLocation_TheChannel;
-        string terrainMetacacheLocation_Normandy;
-        string terrainMetacacheLocation_Nevada;
-        string terrainMetacacheLocation_Falklands;
-        string terrainMetacacheLocation_Mariana;
+        string terrainMetacacheLocation;
         string dcsInstallDirectory;
+        string dcsBasicExe_string;
 
         private void GeneratePathsFromDcsExePath()
         {
             //generate paths here
-            //you need a path for each map
-            //\DCS World OpenBeta\Mods\terrains\Caucasus\misc\metacache\dcs
-            //\DCS World OpenBeta\Mods\terrains\PersianGulf\misc\metacache\dcs
-            //\DCS World OpenBeta\Mods\terrains\Syria\misc\metacache\dcs
-            //\DCS World OpenBeta\Mods\terrains\Nevada\misc\metacache\dcs
-            //\DCS World OpenBeta\Mods\terrains\TheChannel\misc\metacache\dcs
-            //\DCS World OpenBeta\Mods\terrains\Normandy\misc\metacache\dcs
-
-            //\DCS World OpenBeta\Mods\terrains\Mariana\misc\metacache\dcs TODO:Check to make sure this will be correct
-            //\DCS World OpenBeta\Mods\terrains\Falklands\misc\metacache\dcs TODO:Check to make sure this will be correct
-
+            //init the strings first
             dcsInstallDirectory = Path.GetFullPath(Path.Combine(selected_selectDcsExe_string, @"..\..\"));
+            dcsBasicExe_string = Path.Combine(dcsInstallDirectory, @"bin\dcs.exe");
             //MessageBox.Show(dcsInstallDirectory);//results in something like "C:/ProgramFiles/DCS"
 
-            terrainMetacacheLocation_Caucasus = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Caucasus\misc\metacache\dcs");
-            terrainMetacacheLocation_PersianGulf = Path.Combine(dcsInstallDirectory, @"Mods\terrains\PersianGulf\misc\metacache\dcs");
-            terrainMetacacheLocation_Syria = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Syria\misc\metacache\dcs");
-            terrainMetacacheLocation_Nevada = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Nevada\misc\metacache\dcs");
+            //this is used later in Actions_clearTerrainShadersButton()
+            terrainMetacacheLocation = Path.Combine(dcsInstallDirectory, @"Mods\terrains");
 
-            //MessageBox.Show(terrainMetacacheLocation_Caucasus + "\r\n"
-            //    + terrainMetacacheLocation_PersianGulf + "\r\n"
-            //    + terrainMetacacheLocation_Syria + "\r\n");//results in something like "C:/ProgramFiles/DCS"
-
-            //TODO: Check these
-            terrainMetacacheLocation_TheChannel = Path.Combine(dcsInstallDirectory, @"Mods\terrains\TheChannel\misc\metacache\dcs");
-            terrainMetacacheLocation_Normandy = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Normandy\misc\metacache\dcs");
-            terrainMetacacheLocation_Mariana = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Mariana\misc\metacache\dcs");
-            terrainMetacacheLocation_Falklands = Path.Combine(dcsInstallDirectory, @"Mods\terrains\Falklands\misc\metacache\dcs");
+            //get the exe version number
+            if (File.Exists(dcsBasicExe_string))
+            {
+                textBlock_usersVersionNumber.Visibility = Visibility.Visible;
+                FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(dcsBasicExe_string);
+                textBlock_usersVersionNumber.Text = "Your DCS.exe Version: " + myFileVersionInfo.FileVersion;
+                //MessageBox.Show("Your DCS.exe Version: " + myFileVersionInfo.FileVersion);//debugging
+            }
         }
 
+        //these are the strings that will be generated via the options.lua path
         string dcsSavedGamesDirectory;
         string userDirectory;
         string dcsInputsFolderPath;
@@ -459,7 +420,7 @@ namespace DCS_Update_Witching_Utility
 
 
             //make the filepaths
-            dcsInputsFolderPath = Path.Combine(dcsSavedGamesDirectory, @"Config\Input");
+            dcsInputsFolderPath = Path.Combine(dcsSavedGamesDirectory, @"Config\Input");//used for the zip file
             dcsConfigFolderPath = Path.Combine(dcsSavedGamesDirectory, @"Config");//used for the zip file
             dcsFxoFolderPath = Path.Combine(dcsSavedGamesDirectory, @"fxo");
             dcsMetashaders2FolderPath = Path.Combine(dcsSavedGamesDirectory, @"metashaders2");
@@ -469,12 +430,10 @@ namespace DCS_Update_Witching_Utility
             //    + dcsFxoFolderPath + "\r\n"
             //    + dcsMetashaders2FolderPath + "\r\n");
 
-
-
             userDirectory = Path.GetFullPath(Path.Combine(selected_selectOptionsLua_string, @"..\..\..\..\"));
             //MessageBox.Show(userDirectory);//this results in "C:/Users/XXX"
 
-            //make the filepaths
+            //make the TEMP filepaths
             //the final folder could be a few different names
             dcsTempFolderPathOpenbeta = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS.openbeta");
             dcsTempFolderPathStable = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS");
@@ -497,29 +456,31 @@ namespace DCS_Update_Witching_Utility
             //back up the input folder by zipping the contents and dating the folder with date and time
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
-            //MessageBox.Show("Zipping " + dcsInputsFolderPath);
+            //MessageBox.Show("Zipping " + dcsInputsFolderPath);//debugging
             {
                 if (Directory.Exists(dcsInputsFolderPath))
+                    //check to make sure the file is actually there
                 {
                     string zipFilePathAndName = Path.Combine(dcsConfigFolderPath, "Input-" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss") + ".zip");
                     ZipFile.CreateFromDirectory(dcsInputsFolderPath, zipFilePathAndName);
-                    if (File.Exists(zipFilePathAndName))
+                    if (File.Exists(zipFilePathAndName))//if we can find the file we just zipped...
                     {
-                        MessageBox.Show("Zip was successful. It is located here: " + zipFilePathAndName);
+                        MessageBox.Show("Input folder zip was successful. It is located here: " + zipFilePathAndName);
                     }
                     else
                     {
                         MessageBox.Show("Zip was not successful.");
                     }
                 }
-                else
+                else//this can happen if the user had never made a change to the dcs controls
                 {
-                    MessageBox.Show("DCS-UwU could not zip the Input folder located at: " + dcsInputsFolderPath + ". Sorry!");
+                    MessageBox.Show("DCS-UwU could not find or zip the Input folder located at: " + dcsInputsFolderPath + ". Sorry!");
                 }
             }
         }
 
         string directoryToDelete;
+
         private void Button_clearFxoFolder_Click(object sender, RoutedEventArgs e)
         {
             Actions_clearFxoFolderButton();
@@ -543,24 +504,26 @@ namespace DCS_Update_Witching_Utility
                 }
             }
         }
-
+        //this handles all instances of deleting files
+        //The folder location gets "passed" via a string from the priginal method
         private void DeleteAllFilesInTheDirectory()
         {
             //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
+            string sCaption = "READ THIS CAREFULLY";//the titlebar for the popup window
             string sMessageBoxText = "You are about to delete all of the files located in: '" + directoryToDelete + "'\r\n" +
                 "There is no 'undo'. " + "\r\n" +
                 "Do you want to delete the files?";
-            string sCaption = "READ THIS CAREFULLY";
 
+            //the three options. It could be two, but i hope that if the user panics, they only 
+            //have a 1 in 3 chance of hitting the wrong button instead of a 1 in 2 chance
             MessageBoxButton btnMessageBox = MessageBoxButton.YesNoCancel;
-            MessageBoxImage icnMessageBox = MessageBoxImage.Warning;
+            MessageBoxImage icnMessageBox = MessageBoxImage.Warning;//the warning symbol on the left
           
-
             MessageBoxResult rsltMessageBox = MessageBox.Show(sMessageBoxText, sCaption, btnMessageBox, icnMessageBox);
 
             switch (rsltMessageBox)
             {
-                case MessageBoxResult.Yes:
+                case MessageBoxResult.Yes://if the user pressed YES, target the directory, get a list of the files, and then delete the files
                     System.IO.DirectoryInfo di = new DirectoryInfo(directoryToDelete);
 
                     foreach (FileInfo file in di.GetFiles())
@@ -573,11 +536,11 @@ namespace DCS_Update_Witching_Utility
                     }
                     break;
 
-                case MessageBoxResult.No:
+                case MessageBoxResult.No://user clicks no. dont do anything
                     /* ... */
                     break;
 
-                case MessageBoxResult.Cancel:
+                case MessageBoxResult.Cancel://user clicks cancel. dont do anything
                     /* ... */
                     break;
             }
@@ -612,120 +575,39 @@ namespace DCS_Update_Witching_Utility
             Actions_clearTerrainShadersButton();
         }
 
+        string terrainMetacacheLocation_currentMapToClean;
+
         private void Actions_clearTerrainShadersButton()
         {
-            //clear the contents of the map terrain shaders folders
-            //identifty the proper location
-            //identify the installed maps
-            //identify the folders that contain the shaders
-            //check to see if the above file paths exist
-            //delete the contents of the identified folders
 
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
 
             if (isGoodToProcess == true)
             {
-                //=====Caucasus=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_Caucasus))
-                {
-                    directoryToDelete = terrainMetacacheLocation_Caucasus;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Caucasus + ". Sorry!");
-                }
+                //there is one of these for every map. I could make a map list that reads
+                //the contents of the "G:\Games\DCS World OpenBeta\Mods\terrains" folder....acrtually,
+                //that sounds like a good idea. TODO1:do that idea before more maps come out. remember to include
+                //the creation of the map links in the "generation" phase.
+                System.IO.DirectoryInfo terrainLoc = new DirectoryInfo(terrainMetacacheLocation);
+                foreach (DirectoryInfo map in terrainLoc.GetDirectories()){
 
-                //=====Syria=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_Syria))
-                {
-                    directoryToDelete = terrainMetacacheLocation_Syria;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Syria + ". Sorry!");
-                }
-
-                //=====theChannel=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_TheChannel))
-                {
-                    directoryToDelete = terrainMetacacheLocation_TheChannel;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_TheChannel + ". Sorry!");
-                }
-
-                //=====Nevada=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_Nevada))
-                {
-                    directoryToDelete = terrainMetacacheLocation_Nevada;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Nevada + ". Sorry!");
-                }
-
-                //=====PersianGulf=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_PersianGulf))
-                {
-                    directoryToDelete = terrainMetacacheLocation_PersianGulf;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_PersianGulf + ". Sorry!");
-                }
-
-
-                //=====Normandy=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_Normandy))
-                {
-                    directoryToDelete = terrainMetacacheLocation_Normandy;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Normandy + ". Sorry!");
-                }
-
-
-                //=====Falklands=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_Falklands))
-                {
-                    directoryToDelete = terrainMetacacheLocation_Falklands;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Falklands + ". Sorry!");
-                }
-
-                //=====Mariana=====
-                //check to see if the folder exists
-                if (Directory.Exists(terrainMetacacheLocation_Mariana))
-                {
-                    directoryToDelete = terrainMetacacheLocation_Mariana;
-                    DeleteAllFilesInTheDirectory();
-                }
-                else
-                {
-                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + terrainMetacacheLocation_Mariana + ". Sorry!");
+                    //MessageBox.Show(map.FullName.ToString());//this results in "C:\InstallLocation\DCS\Mods\terrains\Caucasus" or similar
+                    //MessageBox.Show(map.Name.ToString());//this results in "Caucasus" or similar
+                    
+                    terrainMetacacheLocation_currentMapToClean = Path.Combine(map.FullName, @"misc\metacache\dcs");
+                    //check to make sure thgat the directgory exists. It should, but just in case...
+                    if (Directory.Exists(terrainMetacacheLocation_currentMapToClean))
+                    {
+                        //MessageBox.Show(terrainMetacacheLocation_currentMapToClean);//results in  "C:\InstallLocation\DCS\Mods\terrains\Caucasus\misc\metacache\dcs"
+                        directoryToDelete = terrainMetacacheLocation_currentMapToClean;
+                        DeleteAllFilesInTheDirectory();
+                    }
                 }
             }
         }
 
         bool isGoodToProcess;
+        //this simply chects to make sure that the exe and lua are selected. otherwise, you cant do the other functions if you try
         private void CheckIfDcsExeAndOptionsLuaHaveBeenSelected()
         {
             if (isOptionsLuaSelected == true && isDcsExeSelected == true)
@@ -749,7 +631,7 @@ namespace DCS_Update_Witching_Utility
         {
             //clears the dcs temp folder
             //identify the locaton of the folder
-            //clear the folder (check to make sure there isnt anything important in there)
+            //clear the folder
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
@@ -793,20 +675,16 @@ namespace DCS_Update_Witching_Utility
 
         private void Actions_WitchEverythingButton()
         {
-            //have an "Are you sure?" dialog pop up
-            //if yes:
-            //backup the inputs folder
-            //do all of the clearing 
-            //and then run the updater in quiet mode
-
+            
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
+            //basically pressed the 2 backup buttons, and then the 4 Cleaning buttons for ya. Still confirms deletes
             if (isGoodToProcess == true)
             {
                 //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
+                string sCaption = "READ THIS CAREFULLY";
                 string sMessageBoxText = "You are about to perform all 6 backup and clearing actions at once." + "\r\n" +
                     "There is no 'undo'. " + "\r\n" +
                     "Do you want to continue?";
-                string sCaption = "READ THIS CAREFULLY";
 
                 MessageBoxButton btnMessageBox = MessageBoxButton.YesNoCancel;
                 MessageBoxImage icnMessageBox = MessageBoxImage.Warning;
@@ -816,14 +694,13 @@ namespace DCS_Update_Witching_Utility
                 switch (rsltMessageBox)
                 {
                     case MessageBoxResult.Yes:
-                        //do all the stuff here
+                        //"Press" the buttons in this order
                         Actions_backupInputFolderButton();
                         Actions_backupConfigFolderButton();
                         Actions_clearFxoFolderButton();
                         Actions_clearmetashaders2FolderButton();
                         Actions_clearTerrainShadersButton();
                         Actions_DcsTempFolderButton();
-                        //actions_updateButton(); TODO:Remove This
                         break;
 
                     case MessageBoxResult.No:
@@ -837,7 +714,7 @@ namespace DCS_Update_Witching_Utility
             }
             else
             {
-                //dont do anything.This case is caught beforehand
+                //dont do anything. This case is caught beforehand
             }
         }
 
@@ -859,7 +736,7 @@ namespace DCS_Update_Witching_Utility
                     ZipFile.CreateFromDirectory(dcsConfigFolderPath, zipFilePathAndName);
                     if (File.Exists(zipFilePathAndName))
                     {
-                        MessageBox.Show("Zip was successful. It is located here: " + zipFilePathAndName);
+                        MessageBox.Show("Config folder zip was successful. It is located here: " + zipFilePathAndName);
                     }
                     else
                     {
@@ -878,14 +755,20 @@ namespace DCS_Update_Witching_Utility
             Actions_UpdateDcsViaStableButton();
         }
 
+        //uses a crafted command for cmd.exe to udpate dcs
         private void Actions_UpdateDcsViaStableButton()
         {
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 string strCmdText;
+                //"C" is for command
+                //the string is the strng (duh)
+                //everything after "--" are properties
+                //"quiet" is a new way to update via the updater. less dialog boxes
+                //"update @release" tell it to update to the stable branch version
                 strCmdText = "/C \"" + selected_selectDcsExe_string + "\" --quiet update @release";
-                //MessageBox.Show(strCmdText);
+                //MessageBox.Show(strCmdText);//debugging
                 System.Diagnostics.Process.Start("CMD.exe", strCmdText);
             }
             else
@@ -899,16 +782,21 @@ namespace DCS_Update_Witching_Utility
             Actions_UpdateDcsViaOpenbetaButton();
         }
 
+        //uses a crafted command for cmd.exe to udpate dcs
         private void Actions_UpdateDcsViaOpenbetaButton()
         {
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
                 string strCmdText;
+                //"C" is for command
+                //the string is the strng (duh)
+                //everything after "--" are properties
+                //"quiet" is a new way to update via the updater. less dialog boxes
+                //"update @openbeta" tell it to update to the penbeta branch version
                 strCmdText = "/C \"" + selected_selectDcsExe_string + "\" --quiet update @openbeta";
-                //MessageBox.Show(strCmdText);
+                //MessageBox.Show(strCmdText);//debugging
                 System.Diagnostics.Process.Start("CMD.exe", strCmdText);
-
             }
             else
             {
@@ -929,10 +817,10 @@ namespace DCS_Update_Witching_Utility
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
-                isStableAutoUpdateOn = true;
-                dispatcherTimer.Start();
-                imageRotationTimer.Start();
-                button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
+                isStableAutoUpdateOn = true;//this makes sure that the update is tripped on a stable update, not a openbeta update
+                dispatcherTimer.Start();//starts the checking of the site
+                imageRotationTimer.Start();//starts the image rotation
+                button_autoUpdateDcsViaOpenbeta.IsEnabled = false;//visual feedback and prevents the user from selecting both
             }
         }
 
@@ -947,19 +835,22 @@ namespace DCS_Update_Witching_Utility
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
             if (isGoodToProcess == true)
             {
-                isOpenbetaAutoUpdateOn = true;
-                dispatcherTimer.Start();
-                imageRotationTimer.Start();
-                button_autoUpdateDcsViaStable.IsEnabled = false;
+                isOpenbetaAutoUpdateOn = true;//this makes sure that the update is tripped on a openbeta update, not a stable update
+                dispatcherTimer.Start();//starts the checking of the site
+                imageRotationTimer.Start();//starts the image rotation
+                button_autoUpdateDcsViaStable.IsEnabled = false;//visual feedback and prevents the user from selecting both
             }
         }
+
         private MediaPlayer mediaPlayer = new MediaPlayer();
+
         private void Button_pickAutoUpdateSound_Click(object sender, RoutedEventArgs e)
         {
             Actions_pickAutoUpdateSoundButton();
-
         }
 
+        //the user can pick a mp3 file to play when the update happens. 
+        //can expand to other file formats upon request and availability
         private void Actions_pickAutoUpdateSoundButton()
         {
             //https://www.wpf-tutorial.com/audio-video/playing-audio/
@@ -968,19 +859,18 @@ namespace DCS_Update_Witching_Utility
             if (openFileDialog.ShowDialog() == true)
             {
                 mediaPlayer.Open(new Uri(openFileDialog.FileName));
-                //mediaPlayer.Play();//if this plays, it does not get triggered by the AutoUpdate
+                //mediaPlayer.Play();//if this plays to the end, it does not get triggered by the AutoUpdate later
             }
         }
 
         private void Button_stopSound_Click(object sender, RoutedEventArgs e)
         {
             Actions_stopSoundButton();
-
         }
 
         private void Actions_stopSoundButton()
         {
-            mediaPlayer.Stop();
+            mediaPlayer.Stop();//stops the sound. simple
         }
 
         //this does not work
@@ -994,49 +884,47 @@ namespace DCS_Update_Witching_Utility
             textBlock_selectOptionsLua.Text = null;
         }
 
+        //for screanshots and demos. Clears the text of the textbox
         private void Button_selectDcsExe_rightUp(object sender, MouseButtonEventArgs e)
         {
             textBlock_selectDcsExe.Text = null;
         }
 
+        //for screanshots and demos. Clears the text of the textbox
         private void Button_selectOptionsLua_rightUp(object sender, MouseButtonEventArgs e)
         {
             textBlock_selectOptionsLua.Text = null;
         }
-    
+
+        //this does not work
         private void TextBlock_time_rightUp(object sender, MouseButtonEventArgs e)
         {
-            //this does not work
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
             MessageBox.Show("Check interval is now 5 seconds.");
         }
-       
+
+        //this does not work
         private void TextBlock_time_leftDown(object sender, MouseButtonEventArgs e)
         {
-            //this does not work
+            
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
             MessageBox.Show("Check interval is now 5 seconds.");
         }
 
+        //this does not work
         private void TextBlock_time_mouseWheel(object sender, MouseWheelEventArgs e)
         {
-            //this does not work
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
             MessageBox.Show("Check interval is now 5 seconds.");
         }
 
-       
-        
+        //sets the update tick to 5 second intervals instead of the default
         private void Button_WitchEverything_rightUp(object sender, MouseButtonEventArgs e)
         {
-            //this one actually works
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);//hours, minutes, seconds
-            //MessageBox.Show("Check interval is now 5 seconds.");
+            //MessageBox.Show("Check interval is now 5 seconds.");//debugging
+            //visual feedback by changing the color of the "last updated" timer
             textBlock_time.Foreground = new SolidColorBrush(Colors.Blue);
-
-           
         }
-
-
     }
 }
