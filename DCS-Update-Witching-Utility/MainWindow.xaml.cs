@@ -52,7 +52,7 @@ v1
 -Pick Auto Update Sound (“Yay!” music)
 v2
 -Clear Tracks Folder
--Clear Tackview Tracks Folder
+-Clear Tacview Tracks Folder
 -Includes file counts before user deletes files
 -Includes data estimation before user deletes files
  */
@@ -389,7 +389,8 @@ namespace DCS_Update_Witching_Utility
             {
                 var selected_selectDcsExe = openFileDialog_selectDcsExe.FileName;
                 selected_selectDcsExe_string = selected_selectDcsExe.ToString();
-                if (selected_selectDcsExe.Contains("DCS_updater.exe"))//check to make sure that the file they pick is the correct one
+                //see the "options.lua" check for info on how this works
+                if (selected_selectDcsExe.IndexOf("DCS_updater.exe", 0, StringComparison.CurrentCultureIgnoreCase) != -1)//check to make sure that the file they pick is the correct one
                 {
                     //the user selected the correct correct file
                     //if the file is the correct one, try to make all of the other file paths that are related
@@ -410,7 +411,7 @@ namespace DCS_Update_Witching_Utility
             CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
         }
 
-
+        
 
         string selected_selectOptionsLua_string;
 
@@ -429,7 +430,11 @@ namespace DCS_Update_Witching_Utility
             {
                 var selected_selectOptionsLua = openFileDialog_selectOptionsLua.FileName;
                 selected_selectOptionsLua_string = selected_selectOptionsLua.ToString();
-                if (selected_selectOptionsLua.Contains("options.lua"))
+                //if (selected_selectOptionsLua.Contains("options.lua")
+                //https://stackoverflow.com/questions/444798/case-insensitive-containsstring
+                //apparently, some people have "Options.lua" instead of "options.lua"
+                //if that is the case, the check for the ".Contains" fails unless the following line is added
+                if (selected_selectOptionsLua.IndexOf("options.lua", 0, StringComparison.CurrentCultureIgnoreCase) != -1)
                 {
                     //the user selected the correct correct file
                     //if the file is the correct one, try to make all of the other file paths that are related
