@@ -9,6 +9,13 @@ using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
 
+//======IMPORTANT=================================================
+///If you try to run the program and it just does nothing, make sure that you 
+/// have selected the correct html code source. Aka, you have commented out the 
+/// local source and uncommented the ED Updates site. Search "digital" to find it
+/// in this code.
+//======IMPORTANT=================================================
+
 /// <summary>
 /// Welcome to DCS Update Witching Utility. DCS-UwU contains the following features:
 /// -Standalone and Steam Integration
@@ -196,9 +203,9 @@ namespace DCS_Update_Witching_Utility
         {
             using (WebClient client = new WebClient()) // WebClient class inherits IDisposable
             {
-                //htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
+                htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
                 //htmlCode = File.ReadAllText(@"C:\Downloads\DCS World Updates.html");//debug testing location
-                htmlCode = File.ReadAllText(@"E:\Downloads\DCS World Updates.html");//debug testing location
+                //htmlCode = File.ReadAllText(@"E:\Downloads\DCS World Updates.html");//debug testing location
 
             }
         }
