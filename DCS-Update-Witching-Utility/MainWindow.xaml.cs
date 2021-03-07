@@ -27,10 +27,25 @@ using System.Text.RegularExpressions;
 /// Steam users will have to do a workaround to use the backup and cleaning functions. It
 /// is noted in the Readme.
 /// </Notes>
+/// 
+
+/* Version Notes:
+v1
+-Initial Release
+-Standalone and Steam Integration
+-Backup Input Folder
+-Backup Config Folder
+-Clear Metashaders2 Folder
+-Clear FXO Folder
+-Clear DCS Temp Folder
+-Clear Terrain Metacache Folder
+-Update DCS via Stable or Openbeta (switch branches)
+-Auto Update DCS Stable or Openbeta
+-Pick Auto Update Sound (“Yay!” music)
+ */
 
 //Resources
 //https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.windowstyle?view=net-5.0
-
 
 namespace DCS_Update_Witching_Utility
 {
@@ -181,8 +196,10 @@ namespace DCS_Update_Witching_Utility
         {
             using (WebClient client = new WebClient()) // WebClient class inherits IDisposable
             {
-                htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
-                //htmlCode = File.ReadAllText(@"C:\Downloads\DCS World Updates.html");//debug esting location
+                //htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
+                //htmlCode = File.ReadAllText(@"C:\Downloads\DCS World Updates.html");//debug testing location
+                htmlCode = File.ReadAllText(@"E:\Downloads\DCS World Updates.html");//debug testing location
+
             }
         }
 
@@ -518,6 +535,7 @@ namespace DCS_Update_Witching_Utility
             //have a 1 in 3 chance of hitting the wrong button instead of a 1 in 2 chance
             MessageBoxButton btnMessageBox = MessageBoxButton.YesNoCancel;
             MessageBoxImage icnMessageBox = MessageBoxImage.Warning;//the warning symbol on the left
+           
           
             MessageBoxResult rsltMessageBox = MessageBox.Show(sMessageBoxText, sCaption, btnMessageBox, icnMessageBox);
 
