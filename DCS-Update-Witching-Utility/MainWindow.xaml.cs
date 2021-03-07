@@ -53,8 +53,8 @@ v1
 v2
 -Clear Tracks Folder
 -Clear Tackview Tracks Folder
--Include File Counts
--Include Data estimation
+-Includes file counts before user deletes files
+-Includes data estimation before user deletes files
  */
 
 //Resources
@@ -81,6 +81,11 @@ namespace DCS_Update_Witching_Utility
         public MainWindow()
         {
             InitializeComponent();
+            //init all the buttons as disabled until the user selects the dcs_updater.exe and the options.lua
+
+            DisableAllOfTheButtonsExceptTheFirstTwo();
+            
+
             //if for some readon the website check does not happen correctly
             //his will remain invisible and not look weird.
             textBlock_time.Visibility = Visibility.Hidden;
@@ -96,6 +101,44 @@ namespace DCS_Update_Witching_Utility
             imageRotationTimer.Tick += ImageRotationTimer_Tick;//creates the tick even for this timer
             imageRotationTimer.Interval = new TimeSpan(0, 0, 1);//hours, minutes, seconds. As you can see, this will rotate the image every 1 second
             //higher rate of rotation with lower angle rotations are possible, but they take more CPU
+        }
+
+        private void DisableAllOfTheButtonsExceptTheFirstTwo()
+        {
+            button_backupInputFolder.IsEnabled = false;
+            button_backupConfigFolder.IsEnabled = false;
+            button_clearMetashaders2Folder.IsEnabled = false;
+            button_clearFxoFolder.IsEnabled = false;
+            button_DcsTempFolder.IsEnabled = false;
+            button_clearTerrainShaders.IsEnabled = false;
+            button_clearDcsTracksFolder.IsEnabled = false;
+            button_clearTacviewTracksFolder.IsEnabled = false;
+            button_UpdateDcsViaOpenbeta.IsEnabled = false;
+            button_UpdateDcsViaStable.IsEnabled = false;
+            button_autoUpdateDcsViaStable.IsEnabled = false;
+            button_autoUpdateDcsViaOpenbeta.IsEnabled = false;
+            button_pickAutoUpdateSound.IsEnabled = false;
+            button_stopSound.IsEnabled = false;
+            button_WitchEverything.IsEnabled = false;
+        }
+
+        private void EnableAllOfTheButtons()
+        {
+            button_backupInputFolder.IsEnabled = true;
+            button_backupConfigFolder.IsEnabled = true;
+            button_clearMetashaders2Folder.IsEnabled = true;
+            button_clearFxoFolder.IsEnabled = true;
+            button_DcsTempFolder.IsEnabled = true;
+            button_clearTerrainShaders.IsEnabled = true;
+            button_clearDcsTracksFolder.IsEnabled = true;
+            button_clearTacviewTracksFolder.IsEnabled = true;
+            button_UpdateDcsViaOpenbeta.IsEnabled = true;
+            button_UpdateDcsViaStable.IsEnabled = true;
+            button_autoUpdateDcsViaStable.IsEnabled = true;
+            button_autoUpdateDcsViaOpenbeta.IsEnabled = true;
+            button_pickAutoUpdateSound.IsEnabled = true;
+            button_stopSound.IsEnabled = true;
+            button_WitchEverything.IsEnabled = true;
         }
 
         int rotationTracker = 0;//this is the init for the rotation tracker. the number goes up and  up and up...
@@ -364,6 +407,7 @@ namespace DCS_Update_Witching_Utility
                     isDcsExeSelected = false;
                 }
             }
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
         }
 
 
@@ -403,6 +447,7 @@ namespace DCS_Update_Witching_Utility
                     isOptionsLuaSelected = false;
                 }
             }
+            CheckIfDcsExeAndOptionsLuaHaveBeenSelected();
         }
 
 
@@ -674,11 +719,13 @@ namespace DCS_Update_Witching_Utility
             {
                 isGoodToProcess = true;
                 SaveUserSettings();
+                EnableAllOfTheButtons();
             }
             else
             {
-                MessageBox.Show("Please select your DCS_Updater.exe and Options.lua");
+                //MessageBox.Show("Please select your DCS_Updater.exe and Options.lua");
                 isGoodToProcess = false;
+                DisableAllOfTheButtonsExceptTheFirstTwo();
             }
         }
 
@@ -742,7 +789,7 @@ namespace DCS_Update_Witching_Utility
             {
                 //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
                 string sCaption = "READ THIS CAREFULLY";
-                string sMessageBoxText = "You are about to perform all 6 backup and clearing actions at once." + "\r\n" +
+                string sMessageBoxText = "You are about to perform all backup and clearing actions at once." + "\r\n" +
                     "There is no 'undo'. " + "\r\n" +
                     "Do you want to continue?";
 
@@ -1001,7 +1048,6 @@ namespace DCS_Update_Witching_Utility
             if (isGoodToProcess == true)
             {
                 //check to see if the folder exists
-
                 if (Directory.Exists(tacviewTracksFolderPath))
                 {
                     directoryToDelete = tacviewTracksFolderPath;
@@ -1024,7 +1070,6 @@ namespace DCS_Update_Witching_Utility
             if (isGoodToProcess == true)
             {
                 //check to see if the folder exists
-
                 if (Directory.Exists(dcsTracksFolderPath))
                 {
                     directoryToDelete = dcsTracksFolderPath;
