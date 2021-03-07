@@ -107,7 +107,7 @@ Thanks to JCofDI for being the first to be Witched :D
 
 -Check out my other Mods, Utilities, and VoiceAttack profiles here: https://www.digitalcombatsimulator.com/en/files/filter/user-is-asherao/apply/?PER_PAGE=100
 
--Check out DCS-UwU on the DCS forums
+-Check out DCS-UwU on the DCS forums: https://forums.eagle.ru/topic/264479-dcs-update-witching-utility-by-bailey/
 
 -If you would like to contribute to the development of DCS-UwU, check out the code, or if you like spaghetti, the DCS-UwU Github is located here: https://github.com/asherao/DCS-Update-Witching-Utility
 
