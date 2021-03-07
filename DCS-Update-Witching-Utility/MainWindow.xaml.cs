@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 //======IMPORTANT=================================================
 ///If you try to run the program and it just does nothing, make sure that you 
@@ -49,6 +50,11 @@ v1
 -Update DCS via Stable or Openbeta (switch branches)
 -Auto Update DCS Stable or Openbeta
 -Pick Auto Update Sound (“Yay!” music)
+v2
+-Clear Tracks Folder
+-Clear Tackview Tracks Folder
+-Include File Counts
+-Include Data estimation
  */
 
 //Resources
@@ -435,6 +441,8 @@ namespace DCS_Update_Witching_Utility
         string dcsTempFolderPathOpenalpha;
         string dcsTempFolderPathStable;
         string dcsConfigFolderPath;
+        string dcsTracksFolderPath;
+        string tacviewTracksFolderPath;//C:\Users\Bailey\Documents\Tacview
 
         private void GeneratePathsFromOptionsLuaPath()
         {
@@ -443,11 +451,13 @@ namespace DCS_Update_Witching_Utility
             //MessageBox.Show(dcsSavedGamesDirectory);//this results in "C:/Users/XXX/Saved Games/DCS.openbeta/"
 
 
+
             //make the filepaths
             dcsInputsFolderPath = Path.Combine(dcsSavedGamesDirectory, @"Config\Input");//used for the zip file
             dcsConfigFolderPath = Path.Combine(dcsSavedGamesDirectory, @"Config");//used for the zip file
             dcsFxoFolderPath = Path.Combine(dcsSavedGamesDirectory, @"fxo");
             dcsMetashaders2FolderPath = Path.Combine(dcsSavedGamesDirectory, @"metashaders2");
+            dcsTracksFolderPath = Path.Combine(dcsSavedGamesDirectory, @"Tracks");
 
             //MessageBox.Show(dcsSavedGamesDirectory + "\r\n"
             //    + dcsInputsFolderPath + "\r\n"
@@ -462,6 +472,7 @@ namespace DCS_Update_Witching_Utility
             dcsTempFolderPathOpenbeta = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS.openbeta");
             dcsTempFolderPathStable = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS");
             dcsTempFolderPathOpenalpha = Path.Combine(userDirectory, @"AppData\Local\Temp\DCS.openalpha");
+            tacviewTracksFolderPath = Path.Combine(userDirectory, @"Documents\Tacview");
 
             //MessageBox.Show(userDirectory + "\r\n"
             //    + dcsTempFolderPathOpenbeta + "\r\n"
@@ -532,11 +543,17 @@ namespace DCS_Update_Witching_Utility
         //The folder location gets "passed" via a string from the priginal method
         private void DeleteAllFilesInTheDirectory()
         {
+
+            CountTheFilesAndEstimateTheDataSize();
             //https://stackoverflow.com/questions/6452139/how-to-create-a-dialogbox-to-prompt-the-user-for-yes-no-option-in-wpf/6455754
             string sCaption = "READ THIS CAREFULLY";//the titlebar for the popup window
             string sMessageBoxText = "You are about to delete all of the files located in: '" + directoryToDelete + "'\r\n" +
+                "Number of files: " + +numberOfFilesToDelete + "\r\n" +
+                "Approximate Megabytes: " + sizeOfFilesToDelete +  "\r\n" +
                 "There is no 'undo'. " + "\r\n" +
                 "Do you want to delete the files?";
+
+
 
             //the three options. It could be two, but i hope that if the user panics, they only 
             //have a 1 in 3 chance of hitting the wrong button instead of a 1 in 2 chance
@@ -570,6 +587,24 @@ namespace DCS_Update_Witching_Utility
                     break;
             }
         }
+
+        long numberOfFilesToDelete;
+        long sizeOfFilesToDelete;
+        private void CountTheFilesAndEstimateTheDataSize()
+        {
+            //https://stackoverflow.com/questions/2242564/file-count-from-a-folder
+            numberOfFilesToDelete = Directory.GetFiles(directoryToDelete, "*", SearchOption.AllDirectories).Length;
+            sizeOfFilesToDelete = GetDirectorySize(directoryToDelete);
+
+        }
+        //https://stackoverflow.com/questions/1118568/how-do-i-get-a-directory-size-files-in-the-directory-in-c
+        private static long GetDirectorySize(string folderPath)
+        {
+            DirectoryInfo di = new DirectoryInfo(folderPath);
+            return di.EnumerateFiles("*.*", SearchOption.AllDirectories).Sum(fi => fi.Length) / 1024 / 1000;//the "/ 1024 / 1000" converts it to megabytes
+
+        }
+
 
         private void Button_clearmetashaders2Folder_Click(object sender, RoutedEventArgs e)
         {
@@ -726,6 +761,8 @@ namespace DCS_Update_Witching_Utility
                         Actions_clearmetashaders2FolderButton();
                         Actions_clearTerrainShadersButton();
                         Actions_DcsTempFolderButton();
+                        Actions_clearDcsTracksFolderButton();
+                        Actions_clearTacviewTracksFolderButton();
                         break;
 
                     case MessageBoxResult.No:
@@ -950,6 +987,54 @@ namespace DCS_Update_Witching_Utility
             //MessageBox.Show("Check interval is now 5 seconds.");//debugging
             //visual feedback by changing the color of the "last updated" timer
             textBlock_time.Foreground = new SolidColorBrush(Colors.Blue);
+        }
+
+        private void Button_clearTacviewTracksFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Actions_clearTacviewTracksFolderButton();
+        }
+
+      
+
+        private void Actions_clearTacviewTracksFolderButton()
+        {
+            if (isGoodToProcess == true)
+            {
+                //check to see if the folder exists
+
+                if (Directory.Exists(tacviewTracksFolderPath))
+                {
+                    directoryToDelete = tacviewTracksFolderPath;
+                    DeleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + tacviewTracksFolderPath + ". Sorry!");
+                }
+            }
+        }
+
+        private void Button_clearDcsTracksFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Actions_clearDcsTracksFolderButton();
+        }
+
+        private void Actions_clearDcsTracksFolderButton()
+        {
+            if (isGoodToProcess == true)
+            {
+                //check to see if the folder exists
+
+                if (Directory.Exists(dcsTracksFolderPath))
+                {
+                    directoryToDelete = dcsTracksFolderPath;
+                    DeleteAllFilesInTheDirectory();
+                }
+                else
+                {
+                    //MessageBox.Show("DCS-UwU could not find the fxo folder at: " + dcsTracksFolderPath + ". Sorry!");
+                }
+            }
         }
     }
 }

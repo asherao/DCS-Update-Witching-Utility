@@ -34,6 +34,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
 
             <!--Margin-->
             <RowDefinition Height="5"/>
@@ -282,6 +283,28 @@
                    Grid.Column="2" Grid.Row="9" Margin="5" Text="DCS Version Detected:" IsEnabled="False" 
                    HorizontalAlignment="Center" VerticalAlignment="Center" MouseRightButtonUp="TextBlock_time_rightUp" MouseLeftButtonDown="TextBlock_time_leftDown" MouseWheel="TextBlock_time_mouseWheel"/>
         </Viewbox>
+
+        <Button x:Name="button_clearDcsTracksFolder" Content="Clear Dcs Tracks Folder" Click="Button_clearDcsTracksFolder_Click"
+                Grid.Column="1" Grid.Row="11" Grid.RowSpan="1" Margin="5">
+            <Button.ContentTemplate>
+                <DataTemplate>
+                    <Viewbox>
+                        <TextBlock>Clear DCS Tracks Folder</TextBlock>
+                    </Viewbox>
+                </DataTemplate>
+            </Button.ContentTemplate>
+        </Button>
+
+        <Button x:Name="button_clearTacviewTracksFolder" Content="clear Tacview Tracks Folder" Click="Button_clearTacviewTracksFolder_Click"
+                Grid.Column="2" Grid.Row="11" Grid.RowSpan="1" Margin="5">
+            <Button.ContentTemplate>
+                <DataTemplate>
+                    <Viewbox>
+                        <TextBlock>Clear Tacview Tracks Folder</TextBlock>
+                    </Viewbox>
+                </DataTemplate>
+            </Button.ContentTemplate>
+        </Button>
 
     </Grid>
 </Window>
