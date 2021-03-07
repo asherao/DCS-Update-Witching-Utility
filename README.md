@@ -2,9 +2,6 @@
 
 *“In folklore, the witching hour or devil's hour is a time of night, typically between 12 and 4 am, that is associated with supernatural events, whereby witches, demons and ghosts are thought to appear and be at their most powerful.”* – Wikipedia
 
-![DCS-UwU](https://i.imgur.com/ZdhStWO.jpg)
-
-
 ## Introduction
 Hello and welcome to DCS-Update Witching Utility. DCS-UwU provides several functions that will prepare your DCS install for a DCS update. Many people swear by these practices. Many do not use them at all. Both with various results. That is why I find the name of the utility quite appropriate. This is not an “everyday” utility. It is meant to be used sparingly, only when you need it. Happy Witching!!! 
 *Note: This program has functions that deletes files. It has been tested on multiple systems to keep accidental occurrences to a minimum, aka, zero. If you are not willing to assume that risk or are not comfortable with that, do not use DCS-UwU!*
@@ -15,6 +12,11 @@ Hello and welcome to DCS-Update Witching Utility. DCS-UwU provides several funct
 2. Unzip the downloaded file with Winrar, Winzip, or another program of your choice. Make sure to unzip it into its own folder.
 3. Read this Readme.
 4. Double click the program to start it.
+
+
+![DCS-UwU-01](https://i.imgur.com/ZdhStWO.jpg)
+![DCS-UwU-02](https://i.imgur.com/i3dQcTn.jpg)
+*### DCS-UwU before and after an update*
 
 ## How To Use DCS-UwU
 
