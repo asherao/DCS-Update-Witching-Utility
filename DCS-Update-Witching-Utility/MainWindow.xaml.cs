@@ -548,7 +548,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(dcsInputsFolderPath))
                     //check to make sure the file is actually there
                 {
-                    string zipFilePathAndName = Path.Combine(dcsConfigFolderPath, "Input-" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss") + ".zip");
+                    string zipFilePathAndName = Path.Combine(dcsConfigFolderPath, "Input-" + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".zip");
                     ZipFile.CreateFromDirectory(dcsInputsFolderPath, zipFilePathAndName);
                     if (File.Exists(zipFilePathAndName))//if we can find the file we just zipped...
                     {
@@ -848,7 +848,7 @@ namespace DCS_Update_Witching_Utility
             {
                 if (Directory.Exists(dcsConfigFolderPath))
                 {
-                    string zipFilePathAndName = Path.Combine(dcsSavedGamesDirectory, "Config-" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss") + ".zip");
+                    string zipFilePathAndName = Path.Combine(dcsSavedGamesDirectory, "Config-" + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".zip");
                     ZipFile.CreateFromDirectory(dcsConfigFolderPath, zipFilePathAndName);
                     if (File.Exists(zipFilePathAndName))
                     {
