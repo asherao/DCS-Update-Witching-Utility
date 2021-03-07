@@ -55,6 +55,8 @@ v2
 -Clear Tacview Tracks Folder
 -Includes file counts before user deletes files
 -Includes data estimation before user deletes files
+v2.1
+-Picked file names are no longer case senistive
  */
 
 //Resources
