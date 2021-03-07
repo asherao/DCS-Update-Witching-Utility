@@ -14,7 +14,7 @@ Hello and welcome to DCS-Update Witching Utility. DCS-UwU provides several funct
 4. Double click the program to start it.
 
 
-![DCS-UwU-03](https://i.imgur.com/pAnywU4.jpg)  
+![DCS-UwU-03](https://i.imgur.com/417qRcP.jpg)  
 *DCS-UwU before and after an update*
 
 ## How To Use DCS-UwU
@@ -42,6 +42,10 @@ play DCS, such as briefing images and audio sounds. Unfortunately, DCS sometimes
 folder when the game is closed. Some people have found gigabytes of unnecessary temporary files in
 this folder. Clearing them will make the hard drive space available for more important and useful things
 (like more DCS Modules!).
+
+**Clear DCS Tracks, TacView Tracks Folders** – These are folders that are known to accumulate gigabytes
+worth of data, unknown to the user. Now you know and you can choose to clear them out. The TacView
+folder is assumed to be the default “C:\Users\YOURNAME\Documents\Tacview”.
 
 **Update DCS via Stable** – Updates DCS to the newest Stable Branch Version. Will also switch from
 Openbeta to Stable.
@@ -125,3 +129,8 @@ v1
 -Update DCS via Stable or Openbeta (switch branches)  
 -Auto Update DCS Stable or Openbeta  
 -Pick Auto Update Sound (“Yay!” music)  
+v2  
+-Clear Tracks Folder  
+-Clear Tackview Tracks Folder  
+-Includes file counts before user deletes files  
+-Includes data estimation before user deletes files  
