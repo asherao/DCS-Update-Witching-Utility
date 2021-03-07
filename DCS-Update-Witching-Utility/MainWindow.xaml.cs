@@ -57,6 +57,8 @@ v2
 -Includes data estimation before user deletes files
 v2.1
 -Picked file names are no longer case senistive
+v2.2
+-Uses https://en.wikipedia.org/wiki/ISO_8601 for zip file dates
  */
 
 //Resources
@@ -257,7 +259,6 @@ namespace DCS_Update_Witching_Utility
                 htmlCode = client.DownloadString("http://updates.digitalcombatsimulator.com/");
                 //htmlCode = File.ReadAllText(@"C:\Downloads\DCS World Updates.html");//debug testing location
                 //htmlCode = File.ReadAllText(@"E:\Downloads\DCS World Updates.html");//debug testing location
-
             }
         }
 
@@ -548,6 +549,7 @@ namespace DCS_Update_Witching_Utility
                 if (Directory.Exists(dcsInputsFolderPath))
                     //check to make sure the file is actually there
                 {
+                    //https://en.wikipedia.org/wiki/ISO_8601
                     string zipFilePathAndName = Path.Combine(dcsConfigFolderPath, "Input-" + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".zip");
                     ZipFile.CreateFromDirectory(dcsInputsFolderPath, zipFilePathAndName);
                     if (File.Exists(zipFilePathAndName))//if we can find the file we just zipped...
@@ -848,6 +850,7 @@ namespace DCS_Update_Witching_Utility
             {
                 if (Directory.Exists(dcsConfigFolderPath))
                 {
+                    //https://en.wikipedia.org/wiki/ISO_8601
                     string zipFilePathAndName = Path.Combine(dcsSavedGamesDirectory, "Config-" + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".zip");
                     ZipFile.CreateFromDirectory(dcsConfigFolderPath, zipFilePathAndName);
                     if (File.Exists(zipFilePathAndName))
