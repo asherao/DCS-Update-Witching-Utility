@@ -15,8 +15,8 @@ Hello and welcome to DCS-Update Witching Utility. DCS-UwU provides several funct
 
 
 ![DCS-UwU-01](https://i.imgur.com/ZdhStWO.jpg)
-![DCS-UwU-02](https://i.imgur.com/i3dQcTn.jpg)
-*### DCS-UwU before and after an update*
+![DCS-UwU-02](https://i.imgur.com/i3dQcTn.jpg)  
+*DCS-UwU before and after an update*
 
 ## How To Use DCS-UwU
 
