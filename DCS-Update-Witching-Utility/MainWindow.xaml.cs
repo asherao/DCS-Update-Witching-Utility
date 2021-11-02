@@ -709,13 +709,25 @@ namespace DCS_Update_Witching_Utility
                     //MessageBox.Show(map.Name.ToString());//this results in "Caucasus" or similar
                     
                     terrainMetacacheLocation_currentMapToClean = Path.Combine(map.FullName, @"misc\metacache\dcs");
+                    
                     //check to make sure thgat the directgory exists. It should, but just in case...
                     if (Directory.Exists(terrainMetacacheLocation_currentMapToClean))
                     {
-                        //MessageBox.Show(terrainMetacacheLocation_currentMapToClean);//results in  "C:\InstallLocation\DCS\Mods\terrains\Caucasus\misc\metacache\dcs"
+                        //MessageBox.Show(terrainMetacacheLocation_currentMapToClean);//results in  "C:\InstallLocation\DCS\Mods\terrains\Caucasus\misc\metacache\base"
                         directoryToDelete = terrainMetacacheLocation_currentMapToClean;
                         DeleteAllFilesInTheDirectory();
                     }
+
+                    //changed to \base in dcs v2.7.7.15038
+                    //remains backwards compatable bc the above remains in the code
+                    terrainMetacacheLocation_currentMapToClean = Path.Combine(map.FullName, @"misc\metacache\base");
+                    if (Directory.Exists(terrainMetacacheLocation_currentMapToClean))
+                    {
+                        //MessageBox.Show(terrainMetacacheLocation_currentMapToClean);//results in  "C:\InstallLocation\DCS\Mods\terrains\Caucasus\misc\metacache\base"
+                        directoryToDelete = terrainMetacacheLocation_currentMapToClean;
+                        DeleteAllFilesInTheDirectory();
+                    }
+
                 }
             }
         }
