@@ -117,6 +117,13 @@ Feel free to contact me on the ED forums (Bailey) or better yet on Discord (Bail
 MAR2021
 
 ## Version Notes:
+v3
+-Updated for DCS v2.7.7.15038, terrain clear is backwards compatible
+v2  
+-Clear Tracks Folder  
+-Clear Tackview Tracks Folder  
+-Includes file counts before user deletes files  
+-Includes data estimation before user deletes files  
 v1  
 -Initial Release  
 -Standalone and Steam Integration  
@@ -129,8 +136,3 @@ v1
 -Update DCS via Stable or Openbeta (switch branches)  
 -Auto Update DCS Stable or Openbeta  
 -Pick Auto Update Sound (“Yay!” music)  
-v2  
--Clear Tracks Folder  
--Clear Tackview Tracks Folder  
--Includes file counts before user deletes files  
--Includes data estimation before user deletes files  
